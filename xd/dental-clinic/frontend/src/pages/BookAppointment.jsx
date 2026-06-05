@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
+import { useClinic } from '../context/ClinicContext'
 import PageMeta from '../components/PageMeta'
 import EmptyState from '../components/EmptyState'
 import '../styles/BookAppointment.css'
@@ -10,6 +11,7 @@ import CalendarPicker from '../components/CalendarPicker'
 const BookAppointment = () => {
   const navigate = useNavigate()
   const { auth } = useAuth()
+  const { singleDoctorMode } = useClinic()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [dentists, setDentists] = useState([])
@@ -53,6 +55,15 @@ const BookAppointment = () => {
     fetchDentists()
   }, [])
 
+  const practiceDentist = singleDoctorMode && dentists.length > 0 ? dentists[0] : null
+  const hideDentistPicker = !!practiceDentist
+
+  useEffect(() => {
+    if (practiceDentist && !formData.dentistId) {
+      setFormData((prev) => ({ ...prev, dentistId: practiceDentist._id }))
+    }
+  }, [practiceDentist, formData.dentistId])
+
   const availabilityAnchor = useMemo(() => {
     const y = monthDate.getFullYear()
     const m = String(monthDate.getMonth() + 1).padStart(2, '0')
@@ -83,11 +94,6 @@ const BookAppointment = () => {
   useEffect(() => {
     reloadAvailability()
   }, [reloadAvailability])
-
-  const selectedDentist = useMemo(
-    () => dentists.find((dentist) => dentist._id === formData.dentistId),
-    [dentists, formData.dentistId]
-  )
 
   const selectedDateAvailability = useMemo(
     () => availability?.calendar?.find((item) => item.date === formData.date),
@@ -148,56 +154,42 @@ const BookAppointment = () => {
 
   return (
     <div className="book-appointment-container">
-      <PageMeta title="Book a visit" description="Choose a dentist and an available time for your appointment." />
+      <PageMeta title="Book a visit" description="Pick a date and time for your appointment." />
       <div className="container">
         <div className="book-header">
           <h1>Book an Appointment</h1>
-          <p>Schedule your visit with one of our experienced dentists</p>
+          <p>Choose an available date and time for your visit.</p>
         </div>
 
         <div className="book-content">
           {!loadingDentists && dentists.length === 0 ? (
             <EmptyState
-              title="No dentists available"
-              description="The clinic has not published any providers yet. Please try again later or contact the front desk."
+              title="Booking unavailable"
+              description="Online booking is not open yet. Please contact the practice by phone or email."
             />
           ) : (
             <>
           <form onSubmit={handleSubmit} className="booking-form">
             {error && <div className="alert alert-error">{error}</div>}
 
-            <div className="form-group">
-              <label htmlFor="dentist">Select Dentist *</label>
-              <select
-                id="dentist"
-                name="dentistId"
-                value={formData.dentistId}
-                onChange={handleChange}
-                required
-                disabled={loadingDentists}
-              >
-                <option value="">-- Choose a dentist --</option>
-                {dentists.map((dentist) => (
-                  <option key={dentist._id} value={dentist._id}>
-                    {dentist.fullName} - {dentist.specialty}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {selectedDentist && (
-              <div className="booking-info">
-                <h3>Selected Dentist</h3>
-                <ul>
-                  <li>Clinic: {selectedDentist.clinicName}</li>
-                  <li>Experience: {selectedDentist.experienceYears || 1} years</li>
-                  <li>Current focus: {selectedDentist.currentFocus || 'Consultations'}</li>
-                  <li>Status now: {selectedDentist.currentStatus?.replace('_', ' ') || 'available'}</li>
-                  <li>
-                    Available days in calendar: {availability?.availableDates?.length || 0}
-                    {loadingAvailability ? ' (loading...)' : ''}
-                  </li>
-                </ul>
+            {!hideDentistPicker && (
+              <div className="form-group">
+                <label htmlFor="dentist">Select Dentist *</label>
+                <select
+                  id="dentist"
+                  name="dentistId"
+                  value={formData.dentistId}
+                  onChange={handleChange}
+                  required
+                  disabled={loadingDentists}
+                >
+                  <option value="">-- Choose a dentist --</option>
+                  {dentists.map((dentist) => (
+                    <option key={dentist._id} value={dentist._id}>
+                      {dentist.fullName} - {dentist.specialty}
+                    </option>
+                  ))}
+                </select>
               </div>
             )}
 
@@ -208,7 +200,9 @@ const BookAppointment = () => {
                   <CalendarPicker
                     title={
                       !formData.dentistId
-                        ? 'Select a dentist first'
+                        ? hideDentistPicker
+                          ? 'Loading availability…'
+                          : 'Select a dentist first'
                         : loadingAvailability
                         ? 'Loading availability…'
                         : 'Pick an available day (badge = free slots)'

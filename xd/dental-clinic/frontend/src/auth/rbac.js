@@ -32,6 +32,13 @@ export function safePostLoginRedirect(role, fromPath) {
     doctor: [/^\/doctor-dashboard(\/.*)?$/],
     receptionist: [/^\/reception-console(\/.*)?$/, /^\/reception-dashboard(\/.*)?$/],
     admin: [/^\/admin-dashboard(\/.*)?$/],
+    practiceOwner: [/^\/doctor-dashboard(\/.*)?$/],
+  }
+
+  if (role === 'admin') {
+    const list = [...patterns.admin, ...(patterns.practiceOwner || [])]
+    if (fromPath && list.some((re) => re.test(fromPath))) return fromPath
+    return fallback
   }
 
   const list = patterns[role]

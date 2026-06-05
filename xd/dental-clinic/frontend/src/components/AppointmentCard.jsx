@@ -1,11 +1,14 @@
 import React, { useState } from 'react'
+import { useClinic } from '../context/ClinicContext'
 import '../styles/AppointmentCard.css'
 import { formatDisplayDateTime } from '../utils/date'
 
 const AppointmentCard = ({ appointment, onDelete }) => {
+  const { singleDoctorMode } = useClinic()
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const dentistName = appointment.dentistId?.fullName || appointment.dentist
   const specialty = appointment.dentistId?.specialty || 'Dental Care'
+  const showClinician = !singleDoctorMode
 
   const statusColors = {
     scheduled: '#10b981',
@@ -17,9 +20,18 @@ const AppointmentCard = ({ appointment, onDelete }) => {
     <div className="appointment-card">
       <div className="appointment-header">
         <div>
-          <h3 className="appointment-dentist">{dentistName}</h3>
-          <p className="appointment-date">{formatDisplayDateTime(appointment.date, appointment.time)}</p>
-          <p className="appointment-date">{specialty}</p>
+          {showClinician ? (
+            <>
+              <h3 className="appointment-dentist">{dentistName}</h3>
+              <p className="appointment-date">{formatDisplayDateTime(appointment.date, appointment.time)}</p>
+              <p className="appointment-date">{specialty}</p>
+            </>
+          ) : (
+            <>
+              <h3 className="appointment-dentist">{formatDisplayDateTime(appointment.date, appointment.time)}</h3>
+              <p className="appointment-date">{appointment.reason || 'Appointment'}</p>
+            </>
+          )}
         </div>
         <span
           className="appointment-status"
@@ -30,9 +42,11 @@ const AppointmentCard = ({ appointment, onDelete }) => {
       </div>
 
       <div className="appointment-body">
-        <p className="appointment-reason">
-          <strong>Reason:</strong> {appointment.reason}
-        </p>
+        {showClinician ? (
+          <p className="appointment-reason">
+            <strong>Reason:</strong> {appointment.reason}
+          </p>
+        ) : null}
         {appointment.symptoms && (
           <p className="appointment-reason">
             <strong>Symptoms:</strong> {appointment.symptoms}

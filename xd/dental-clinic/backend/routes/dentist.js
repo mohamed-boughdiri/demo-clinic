@@ -1,19 +1,28 @@
 import express from 'express';
 import { auth } from '../middleware/auth.js';
 import { requireRole } from '../middleware/requireRole.js';
+import { resolveDentistId } from '../middleware/resolveDentistId.js';
+import { isSingleDoctorMode } from '../config/clinic.js';
+import { getPracticeDentist } from '../jobs/ensurePracticeOwnerDoctor.js';
 import Appointment from '../models/Appointment.js';
 import Dentist from '../models/Dentist.js';
 import User from '../models/User.js';
 
 const router = express.Router();
 
+const publicDentistFields =
+  'fullName specialty clinicName experienceYears achievements education about currentFocus currentStatus';
+
 // Public dentist directory for patients
 router.get('/list', async (req, res) => {
   try {
+    if (isSingleDoctorMode()) {
+      const dentist = await getPracticeDentist();
+      return res.json(dentist ? [dentist] : []);
+    }
+
     const dentists = await Dentist.find({})
-      .select(
-        'fullName specialty clinicName experienceYears achievements education about currentFocus currentStatus'
-      )
+      .select(publicDentistFields)
       .sort({ createdAt: -1 });
 
     res.json(dentists);
@@ -28,7 +37,7 @@ router.use(auth, requireRole(['doctor']));
 router.get('/my', async (req, res) => {
   try {
     // Get the dentist info to match appointments
-    const dentist = await Dentist.findById(req.userId);
+    const dentist = await Dentist.findById(resolveDentistId(req));
     
     if (!dentist) {
       return res.status(404).json({ message: 'Dentist not found' });
@@ -52,7 +61,7 @@ router.get('/my', async (req, res) => {
 // Dentist schedule calendar (month/day range)
 router.get('/schedule', async (req, res) => {
   try {
-    const dentist = await Dentist.findById(req.userId);
+    const dentist = await Dentist.findById(resolveDentistId(req));
 
     if (!dentist) {
       return res.status(404).json({ message: 'Dentist not found' });
@@ -83,7 +92,7 @@ router.get('/schedule', async (req, res) => {
 // Get dentist info
 router.get('/profile', async (req, res) => {
   try {
-    const dentist = await Dentist.findById(req.userId).select('-password');
+    const dentist = await Dentist.findById(resolveDentistId(req)).select('-password');
     
     if (!dentist) {
       return res.status(404).json({ message: 'Dentist not found' });
@@ -98,7 +107,7 @@ router.get('/profile', async (req, res) => {
 // Get patient list for dentist
 router.get('/patients', async (req, res) => {
   try {
-    const dentist = await Dentist.findById(req.userId);
+    const dentist = await Dentist.findById(resolveDentistId(req));
     
     if (!dentist) {
       return res.status(404).json({ message: 'Dentist not found' });
@@ -122,7 +131,7 @@ router.get('/patients', async (req, res) => {
 
 router.get('/patients/:patientId/history', async (req, res) => {
   try {
-    const dentist = await Dentist.findById(req.userId);
+    const dentist = await Dentist.findById(resolveDentistId(req));
     if (!dentist) {
       return res.status(404).json({ message: 'Dentist not found' });
     }
@@ -160,7 +169,7 @@ router.get('/patients/:patientId/history', async (req, res) => {
 router.put('/appointments/:id/status', async (req, res) => {
   try {
     const { status } = req.body;
-    const dentist = await Dentist.findById(req.userId);
+    const dentist = await Dentist.findById(resolveDentistId(req));
 
     if (!dentist) {
       return res.status(404).json({ message: 'Dentist not found' });
@@ -208,7 +217,7 @@ router.put('/profile/live', async (req, res) => {
     if (currentStatus) updates.currentStatus = currentStatus;
     if (typeof currentFocus === 'string') updates.currentFocus = currentFocus.trim();
 
-    const dentist = await Dentist.findByIdAndUpdate(req.userId, updates, {
+    const dentist = await Dentist.findByIdAndUpdate(resolveDentistId(req), updates, {
       new: true,
       runValidators: true,
     }).select('-password');
@@ -235,7 +244,7 @@ router.put('/appointments/:id/notes', async (req, res) => {
       procedures,
       painLevel,
     } = req.body;
-    const dentist = await Dentist.findById(req.userId);
+    const dentist = await Dentist.findById(resolveDentistId(req));
 
     if (!dentist) {
       return res.status(404).json({ message: 'Dentist not found' });

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
+import { useClinic } from '../context/ClinicContext'
 import PageMeta from '../components/PageMeta'
 import '../styles/Auth.css'
 
@@ -12,11 +13,9 @@ const specialties = [
   'Oral Surgery',
 ]
 
-/**
- * Admin-only: create receptionist or admin (User collection).
- */
 export default function CreateStaffAccount() {
   const { auth } = useAuth()
+  const { singleDoctorMode } = useClinic()
   const [searchParams] = useSearchParams()
   const authHeader = { headers: { Authorization: `Bearer ${auth.token}` } }
   const [mode, setMode] = useState('staff')
@@ -50,12 +49,15 @@ export default function CreateStaffAccount() {
   useEffect(() => {
     const tab = searchParams.get('tab')
     const staffRole = searchParams.get('staffRole')
-    if (tab === 'doctor') setMode('doctor')
-    else if (tab === 'staff') setMode('staff')
+    if (singleDoctorMode || tab === 'staff') {
+      setMode('staff')
+    } else if (tab === 'doctor') {
+      setMode('doctor')
+    }
     if (staffRole === 'admin' || staffRole === 'receptionist') {
       setStaffForm((p) => ({ ...p, role: staffRole }))
     }
-  }, [searchParams])
+  }, [searchParams, singleDoctorMode])
 
   const submitStaff = async (e) => {
     e.preventDefault()
@@ -99,28 +101,41 @@ export default function CreateStaffAccount() {
     }
   }
 
+  const staffTitle =
+    staffForm.role === 'admin' ? 'Add administrator' : 'Add receptionist'
+  const pageTitle = singleDoctorMode || mode === 'staff' ? staffTitle : 'Add doctor'
+
   return (
     <div className="auth-container">
-      <PageMeta title="Provision accounts" description="Admin — create staff or doctor accounts." />
+      <PageMeta title={pageTitle} description="Admin — create staff accounts." />
       <div className="auth-box" style={{ maxWidth: '480px' }}>
-        <h1>Provision accounts</h1>
+        <h1>{pageTitle}</h1>
         <p className="auth-subtitle">
-          Fill out a form below and click the button — that creates the account. New users then use{' '}
-          <Link to="/login">Login</Link> (pick Reception, Doctor, or Admin to match what you created).
+          {singleDoctorMode
+            ? 'Create a receptionist or backup admin account. You are already the doctor — no separate doctor account is needed.'
+            : 'Fill out the form below, then the new user signs in from the '}
+          {!singleDoctorMode ? <Link to="/login">Login</Link> : null}
+          {!singleDoctorMode ? ' page.' : null}
         </p>
 
-        <div className="auth-role-toggle">
-          <button type="button" className={`role-btn ${mode === 'staff' ? 'active' : ''}`} onClick={() => setMode('staff')}>
-            Staff (User)
-          </button>
-          <button
-            type="button"
-            className={`role-btn ${mode === 'doctor' ? 'active' : ''}`}
-            onClick={() => setMode('doctor')}
-          >
-            Doctor
-          </button>
-        </div>
+        {!singleDoctorMode ? (
+          <div className="auth-role-toggle">
+            <button
+              type="button"
+              className={`role-btn ${mode === 'staff' ? 'active' : ''}`}
+              onClick={() => setMode('staff')}
+            >
+              Staff
+            </button>
+            <button
+              type="button"
+              className={`role-btn ${mode === 'doctor' ? 'active' : ''}`}
+              onClick={() => setMode('doctor')}
+            >
+              Doctor
+            </button>
+          </div>
+        ) : null}
 
         {message.text ? (
           <div className={message.type === 'error' ? 'alert alert-error' : 'alert alert-success'}>{message.text}</div>
@@ -174,13 +189,18 @@ export default function CreateStaffAccount() {
                 />
               </div>
             </div>
-            <div className="form-group">
-              <label>Role</label>
-              <select value={staffForm.role} onChange={(e) => setStaffForm((p) => ({ ...p, role: e.target.value }))}>
-                <option value="receptionist">Receptionist</option>
-                <option value="admin">Administrator</option>
-              </select>
-            </div>
+            {!searchParams.get('staffRole') ? (
+              <div className="form-group">
+                <label>Role</label>
+                <select
+                  value={staffForm.role}
+                  onChange={(e) => setStaffForm((p) => ({ ...p, role: e.target.value }))}
+                >
+                  <option value="receptionist">Receptionist</option>
+                  <option value="admin">Administrator</option>
+                </select>
+              </div>
+            ) : null}
             <div className="form-group">
               <label>Initial password</label>
               <input
@@ -193,7 +213,7 @@ export default function CreateStaffAccount() {
               />
             </div>
             <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-              {loading ? 'Saving…' : 'Create staff account'}
+              {loading ? 'Saving…' : staffForm.role === 'admin' ? 'Create admin account' : 'Create receptionist account'}
             </button>
           </form>
         ) : (
@@ -267,35 +287,6 @@ export default function CreateStaffAccount() {
                 min="0"
                 value={doctorForm.experienceYears}
                 onChange={(e) => setDoctorForm((p) => ({ ...p, experienceYears: e.target.value }))}
-              />
-            </div>
-            <div className="form-group">
-              <label>Current focus (optional)</label>
-              <input
-                value={doctorForm.currentFocus}
-                onChange={(e) => setDoctorForm((p) => ({ ...p, currentFocus: e.target.value }))}
-              />
-            </div>
-            <div className="form-group">
-              <label>Education (comma-separated, optional)</label>
-              <input
-                value={doctorForm.education}
-                onChange={(e) => setDoctorForm((p) => ({ ...p, education: e.target.value }))}
-              />
-            </div>
-            <div className="form-group">
-              <label>Achievements (optional)</label>
-              <input
-                value={doctorForm.achievements}
-                onChange={(e) => setDoctorForm((p) => ({ ...p, achievements: e.target.value }))}
-              />
-            </div>
-            <div className="form-group">
-              <label>About (optional)</label>
-              <textarea
-                rows={2}
-                value={doctorForm.about}
-                onChange={(e) => setDoctorForm((p) => ({ ...p, about: e.target.value }))}
               />
             </div>
             <button type="submit" className="btn btn-primary btn-full" disabled={loading}>

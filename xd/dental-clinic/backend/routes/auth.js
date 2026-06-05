@@ -5,7 +5,7 @@ import rateLimit from 'express-rate-limit';
 import { body, validationResult } from 'express-validator';
 import User from '../models/User.js';
 import Dentist from '../models/Dentist.js';
-import { getClinicName } from '../config/clinic.js';
+import { getClinicName, isSingleDoctorMode } from '../config/clinic.js';
 import { sendMail } from '../services/email.js';
 
 const router = express.Router();
@@ -102,13 +102,25 @@ router.post(
               ? 'receptionist'
               : 'patient';
 
-        const token = jwt.sign(
-          { id: user._id, email: user.email, role: resolvedRole },
-          process.env.JWT_SECRET,
-          { expiresIn: '7d' }
-        );
+        let linkedDentist = null;
+        let isPracticeOwner = false;
+        if (resolvedRole === 'admin' && isSingleDoctorMode()) {
+          linkedDentist = await Dentist.findOne({ email: user.email });
+          isPracticeOwner = !!linkedDentist;
+        }
 
-        return res.json({
+        const tokenPayload = {
+          id: user._id,
+          email: user.email,
+          role: resolvedRole,
+        };
+        if (isPracticeOwner) {
+          tokenPayload.dentistId = linkedDentist._id.toString();
+        }
+
+        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+        const response = {
           message: 'Login successful',
           token,
           role: resolvedRole,
@@ -121,7 +133,30 @@ router.post(
             phone: user.phone,
             dateOfBirth: user.dateOfBirth,
           },
-        });
+        };
+
+        if (isPracticeOwner) {
+          response.isPracticeOwner = true;
+          response.dentistId = linkedDentist._id;
+          response.dentist = {
+            id: linkedDentist._id,
+            email: linkedDentist.email,
+            role: 'doctor',
+            fullName: linkedDentist.fullName,
+            phone: linkedDentist.phone,
+            clinicName: getClinicName(),
+            specialty: linkedDentist.specialty,
+            licenseNumber: linkedDentist.licenseNumber,
+            experienceYears: linkedDentist.experienceYears,
+            education: linkedDentist.education,
+            achievements: linkedDentist.achievements,
+            about: linkedDentist.about,
+            currentFocus: linkedDentist.currentFocus,
+            currentStatus: linkedDentist.currentStatus,
+          };
+        }
+
+        return res.json(response);
       }
 
       const dentist = await Dentist.findOne({ email }).select('+password');

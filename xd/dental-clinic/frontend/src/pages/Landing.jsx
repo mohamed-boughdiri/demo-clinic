@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
-import axios from 'axios'
+import { useClinic } from '../context/ClinicContext'
 import PageMeta from '../components/PageMeta'
 import '../styles/Landing.css'
 import oralSurgeryImage from '../assets/landing/oral-surgery.jpeg'
@@ -8,7 +8,8 @@ import followUpImage from '../assets/landing/follow-up.jpg'
 import digitalClinicalRecordsImage from '../assets/landing/digital-clinical-records.jpg'
 
 const Landing = () => {
-  const [dentists, setDentists] = useState([])
+  const { clinicName } = useClinic()
+
   const fallbackVisual = (title, tone = '#0f4c81') =>
     `data:image/svg+xml;utf8,${encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
@@ -25,40 +26,10 @@ const Landing = () => {
       </svg>
     `)}`
 
-  const portraitFallback = (fullName) => {
-    const initials = fullName
-      .split(' ')
-      .slice(0, 2)
-      .map((p) => p[0] || '')
-      .join('')
-      .toUpperCase()
-    return `data:image/svg+xml;utf8,${encodeURIComponent(`
-      <svg xmlns="http://www.w3.org/2000/svg" width="260" height="260" viewBox="0 0 260 260">
-        <defs>
-          <linearGradient id="p" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#0f4c81"/>
-            <stop offset="100%" stop-color="#2a86cf"/>
-          </linearGradient>
-        </defs>
-        <rect width="260" height="260" fill="url(#p)"/>
-        <circle cx="130" cy="104" r="50" fill="rgba(255,255,255,0.82)"/>
-        <path d="M58 228c16-40 52-62 72-62s56 22 72 62" fill="rgba(255,255,255,0.82)"/>
-        <text x="130" y="242" text-anchor="middle" fill="#fff" font-size="30" font-family="Arial" font-weight="700">${initials}</text>
-      </svg>
-    `)}`
-  }
-
   const withFallback = (label, tone) => (e) => {
     e.currentTarget.src = fallbackVisual(label, tone)
   }
 
-  const dentistProfilePhotos = [
-    'https://randomuser.me/api/portraits/women/65.jpg',
-    'https://randomuser.me/api/portraits/men/44.jpg',
-    'https://randomuser.me/api/portraits/women/32.jpg',
-    'https://randomuser.me/api/portraits/men/71.jpg',
-    'https://randomuser.me/api/portraits/women/50.jpg',
-  ]
   const trustHighlights = [
     {
       title: 'Premium sterilization',
@@ -73,8 +44,8 @@ const Landing = () => {
         'https://images.unsplash.com/photo-1588776814546-daab30f310ce?auto=format&fit=crop&w=1200&q=80',
     },
     {
-      title: 'Specialist network',
-      text: 'Ortho, cosmetic, surgery, and restorative experts',
+      title: 'Personalized care',
+      text: 'Continuity of care with your history kept in one place',
       image:
         'https://images.unsplash.com/photo-1629909615184-74f495363b67?auto=format&fit=crop&w=1200&q=80',
     },
@@ -85,31 +56,18 @@ const Landing = () => {
     },
   ]
 
-  useEffect(() => {
-    const fetchDentists = async () => {
-      try {
-        const response = await axios.get('/api/dentist/list')
-        setDentists(response.data)
-      } catch (error) {
-        setDentists([])
-      }
-    }
-    fetchDentists()
-  }, [])
-
   return (
     <div className="landing">
       <PageMeta
         title="Home"
-        description="Advanced dental care — book visits and stay connected with your clinical team."
+        description="Personal dental care — book visits and stay connected with your practice."
       />
-      {/* Hero Section */}
       <section className="hero">
         <div className="hero-content">
-          <h1>Advanced Dental Care, Fully Connected</h1>
+          <h1>Personal Dental Care, Fully Connected</h1>
           <p>
-            A modern clinic platform where patients, dentists, treatment history, and
-            follow-up care stay linked in one professional journey.
+            A modern practice where patients, treatment history, and follow-up care stay linked in
+            one clear journey.
           </p>
           <div className="hero-buttons">
             <Link to="/patient-workspace/book" className="btn btn-primary">
@@ -130,11 +88,11 @@ const Landing = () => {
           </article>
           <article>
             <strong>98%</strong>
-            <span>Follow-up adherence with organized treatment plans.</span>
+            <span>Follow-up adherence with a consistent care plan.</span>
           </article>
           <article>
-            <strong>24/7</strong>
-            <span>Always-visible dentist availability and appointment flow.</span>
+            <strong>Same-day</strong>
+            <span>Clear availability and a straightforward booking flow.</span>
           </article>
         </div>
       </section>
@@ -152,7 +110,7 @@ const Landing = () => {
                 onError={withFallback('Connected Appointments', '#0f4c81')}
               />
               <h3>Connected Appointments</h3>
-              <p>Bookings link patients to verified dentist profiles and clinic details.</p>
+              <p>Book online and get confirmation straight to your patient dashboard.</p>
             </div>
             <div className="feature-tile">
               <img
@@ -185,7 +143,7 @@ const Landing = () => {
                 onError={withFallback('Schedule Visibility', '#ad6e0d')}
               />
               <h3>Schedule Visibility</h3>
-              <p>Dentists see daily workload and patients pick only available slots.</p>
+              <p>See open slots and pick a time that works for you.</p>
             </div>
           </div>
         </div>
@@ -218,17 +176,17 @@ const Landing = () => {
             <article>
               <strong>01</strong>
               <h3>Book and Confirm</h3>
-              <p>Select a dentist, pick your day, and reserve a verified slot in seconds.</p>
+              <p>Pick your day and reserve an open slot in seconds.</p>
             </article>
             <article>
               <strong>02</strong>
               <h3>Clinical Assessment</h3>
-              <p>Your symptoms and urgency are captured before consultation starts.</p>
+              <p>Your symptoms and urgency are captured before your visit begins.</p>
             </article>
             <article>
               <strong>03</strong>
               <h3>Treatment Planning</h3>
-              <p>Dentists document diagnosis, procedures, and medication in one file.</p>
+              <p>Diagnosis, procedures, and medication documented in one file.</p>
             </article>
             <article>
               <strong>04</strong>
@@ -250,8 +208,8 @@ const Landing = () => {
             />
             <img
               src="https://images.unsplash.com/photo-1606265752439-1f18756aa5fc?auto=format&fit=crop&w=1200&q=80"
-              alt="Dentist consultation with patient"
-              onError={withFallback('Dentist Consultation', '#1a6ca8')}
+              alt="Dental consultation with patient"
+              onError={withFallback('Consultation', '#1a6ca8')}
             />
             <img
               src="https://images.unsplash.com/photo-1609840114035-3c981b782dfe?auto=format&fit=crop&w=1200&q=80"
@@ -262,7 +220,6 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Services Section */}
       <section className="services">
         <div className="container">
           <h2>Our Services</h2>
@@ -315,46 +272,10 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="team">
-        <div className="container">
-          <h2>Meet Our Dentists</h2>
-          <div className="team-grid">
-            {dentists.length === 0 ? (
-              <div className="team-member">
-                <div className="member-avatar">DC</div>
-                <h3>Dental Team</h3>
-                <p>Professional multi-specialty support</p>
-                <span className="specialty">Register dentists to see live profiles</span>
-              </div>
-            ) : (
-              dentists.map((dentist, index) => (
-                <div className="team-member" key={dentist._id}>
-                  <img
-                    className="member-photo"
-                    src={dentistProfilePhotos[index % dentistProfilePhotos.length]}
-                    alt={`${dentist.fullName} portrait`}
-                    onError={(e) => {
-                      e.currentTarget.src = portraitFallback(dentist.fullName)
-                    }}
-                  />
-                  <h3>{dentist.fullName}</h3>
-                  <p>{dentist.specialty}</p>
-                  <span className="specialty">{dentist.experienceYears || 1}+ years experience</span>
-                  <p className="specialty">{dentist.currentFocus || 'Patient consultations'}</p>
-                  <p className="specialty">Status: {(dentist.currentStatus || 'available').replace('_', ' ')}</p>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
       <section className="cta">
         <div className="container">
           <h2>Ready to Book Your Appointment?</h2>
-          <p>Join our growing family of satisfied patients</p>
+          <p>Book your next visit with {clinicName}</p>
           <Link to="/patient-workspace/book" className="btn btn-primary btn-large">
             Schedule Now
           </Link>
@@ -364,7 +285,7 @@ const Landing = () => {
       <section className="location-contact">
         <div className="container location-contact-grid">
           <div className="location-panel">
-            <h2>Visit Our Clinic</h2>
+            <h2>Visit {clinicName}</h2>
             <p>123 Smile Avenue, Downtown Health District</p>
             <p>Mon - Fri: 9:00 AM - 6:00 PM | Sat: 10:00 AM - 4:00 PM</p>
             <p>Phone: (555) 123-4567 | Email: hello@dentalclinic.com</p>
@@ -377,7 +298,7 @@ const Landing = () => {
           </div>
           <form className="contact-panel" onSubmit={(e) => e.preventDefault()}>
             <h3>Quick Contact</h3>
-            <p>Send us a message and our team will call you back.</p>
+            <p>Send us a message and we will call you back.</p>
             <input type="text" placeholder="Full name" />
             <input type="tel" placeholder="Phone number" />
             <input type="email" placeholder="Email address" />
@@ -387,12 +308,11 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="footer">
         <div className="container">
           <div className="footer-content">
             <div className="footer-section">
-              <h4>DentalClinic</h4>
+              <h4>{clinicName}</h4>
               <p>Your trusted partner in dental health</p>
             </div>
             <div className="footer-section">
@@ -408,7 +328,7 @@ const Landing = () => {
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2024 DentalClinic. All rights reserved.</p>
+            <p>&copy; 2024 {clinicName}. All rights reserved.</p>
           </div>
         </div>
       </footer>

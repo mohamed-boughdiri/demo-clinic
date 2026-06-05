@@ -1,10 +1,12 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useClinic } from '../context/ClinicContext'
 import '../styles/Navbar.css'
 
 const Navbar = () => {
   const { auth, logout } = useAuth()
+  const { clinicName, tagline } = useClinic()
   const [isOpen, setIsOpen] = React.useState(false)
 
   return (
@@ -16,8 +18,8 @@ const Navbar = () => {
             <span className="logo-mark-core">DC</span>
           </span>
           <span className="logo-text">
-            <strong>DentalClinic</strong>
-            <small>Professional Care Network</small>
+            <strong>{clinicName}</strong>
+            <small>{tagline}</small>
           </span>
         </Link>
 
@@ -48,9 +50,16 @@ const Navbar = () => {
                   Reception
                 </Link>
               ) : auth.role === 'admin' ? (
-                <Link to="/admin-dashboard" className="nav-link" onClick={() => setIsOpen(false)}>
-                  Admin
-                </Link>
+                <>
+                  <Link to="/admin-dashboard" className="nav-link" onClick={() => setIsOpen(false)}>
+                    Admin
+                  </Link>
+                  {auth.isPracticeOwner ? (
+                    <Link to="/doctor-dashboard" className="nav-link" onClick={() => setIsOpen(false)}>
+                      My schedule
+                    </Link>
+                  ) : null}
+                </>
               ) : (
                 <Link to="/doctor-dashboard" className="nav-link" onClick={() => setIsOpen(false)}>
                   Dashboard

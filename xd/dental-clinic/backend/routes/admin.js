@@ -4,7 +4,7 @@ import { auth } from '../middleware/auth.js';
 import { requireRole } from '../middleware/requireRole.js';
 import User from '../models/User.js';
 import Dentist from '../models/Dentist.js';
-import { getClinicName } from '../config/clinic.js';
+import { getClinicName, isSingleDoctorMode } from '../config/clinic.js';
 
 const router = express.Router();
 
@@ -18,6 +18,18 @@ function handleValidationErrors(req, res, next) {
 
 router.use(auth);
 router.use(requireRole(['admin']));
+
+/** List doctor accounts (admin only — includes login emails). */
+router.get('/doctors', async (req, res) => {
+  try {
+    const dentists = await Dentist.find({})
+      .select('fullName email specialty createdAt')
+      .sort({ createdAt: -1 });
+    res.json(dentists);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 /** Create receptionist or another admin (not patients — use public /register). */
 router.post(
@@ -103,6 +115,15 @@ router.post(
               .map((s) => s.trim())
               .filter(Boolean)
           : [];
+
+      if (isSingleDoctorMode()) {
+        const doctorCount = await Dentist.countDocuments();
+        if (doctorCount >= 1) {
+          return res.status(409).json({
+            message: 'This clinic is set up for one doctor only. A doctor account already exists.',
+          });
+        }
+      }
 
       const existing = await Dentist.findOne({ email });
       if (existing) {

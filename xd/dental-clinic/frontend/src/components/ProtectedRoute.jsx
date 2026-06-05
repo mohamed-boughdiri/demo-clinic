@@ -16,7 +16,12 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
   }
 
   const role = auth.role
-  if (!allowedRoles.length || !allowedRoles.includes(role)) {
+  const canAccess =
+    !allowedRoles.length ||
+    allowedRoles.includes(role) ||
+    (allowedRoles.includes('doctor') && auth.isPracticeOwner)
+
+  if (!canAccess) {
     return (
       <Navigate
         to="/unauthorized"

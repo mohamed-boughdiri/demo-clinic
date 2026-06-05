@@ -97,6 +97,17 @@
   color: var(--clinic-teal, #0d9488);
 }
 
+.admin-hub__card--static {
+  cursor: default;
+  background: rgba(13, 148, 136, 0.06);
+  border-color: rgba(13, 148, 136, 0.2);
+}
+
+.admin-hub__card--static:hover {
+  transform: none;
+  box-shadow: none;
+}
+
 .admin-hub__note {
   font-size: 0.9rem;
   line-height: 1.55;

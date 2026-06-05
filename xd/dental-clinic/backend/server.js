@@ -7,9 +7,10 @@ import appointmentRoutes from './routes/appointments.js';
 import dentistRoutes from './routes/dentist.js';
 import receptionRoutes from './routes/reception.js';
 import adminRoutes from './routes/admin.js';
-import { getClinicName } from './config/clinic.js';
+import { getClinicName, getClinicTagline, isSingleDoctorMode } from './config/clinic.js';
 import { startReminderCron } from './jobs/reminderCron.js';
 import { ensureDefaultAdmin } from './jobs/bootstrapDefaultAdmin.js';
+import { ensurePracticeOwnerDoctor } from './jobs/ensurePracticeOwnerDoctor.js';
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ mongoose
   .then(async () => {
     console.log('MongoDB connected');
     await ensureDefaultAdmin();
+    await ensurePracticeOwnerDoctor();
     startReminderCron();
   })
   .catch((err) => {
@@ -48,7 +50,11 @@ mongoose
 
 // Public: canonical practice name (single clinic for all dentists)
 app.get('/api/clinic', (req, res) => {
-  res.json({ clinicName: getClinicName() });
+  res.json({
+    clinicName: getClinicName(),
+    tagline: getClinicTagline(),
+    singleDoctorMode: isSingleDoctorMode(),
+  });
 });
 
 // Routes

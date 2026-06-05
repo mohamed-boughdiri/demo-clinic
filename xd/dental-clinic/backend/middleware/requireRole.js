@@ -8,9 +8,13 @@ export function requireRole(allowedRoles) {
     if (!role) {
       return res.status(401).json({ message: 'Unauthorized' });
     }
-    if (!allowedRoles.includes(role)) {
-      return res.status(403).json({ message: 'Forbidden' });
+    if (allowedRoles.includes(role)) {
+      return next();
     }
-    next();
+    // Solo practice: admin with a linked dentist profile can use doctor routes.
+    if (allowedRoles.includes('doctor') && role === 'admin' && req.dentistId) {
+      return next();
+    }
+    return res.status(403).json({ message: 'Forbidden' });
   };
 }

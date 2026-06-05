@@ -32,6 +32,9 @@ export const AuthProvider = ({ children }) => {
         ...parsed,
         role,
         user: normalizeUser(parsed.user, role),
+        isPracticeOwner: !!parsed.isPracticeOwner,
+        dentistId: parsed.dentistId || null,
+        dentist: parsed.dentist || null,
       }
     } catch {
       return { token: null, user: null, role: null }
@@ -40,15 +43,29 @@ export const AuthProvider = ({ children }) => {
 
   const [isLoading, setIsLoading] = useState(false)
 
-  const login = (token, user, role = 'patient') => {
+  const login = (token, user, role = 'patient', options = {}) => {
     const normalized = normalizeUser(user, role)
-    const authData = { token, user: normalized, role }
+    const authData = {
+      token,
+      user: normalized,
+      role,
+      isPracticeOwner: !!options.isPracticeOwner,
+      dentistId: options.dentistId || null,
+      dentist: options.dentist || null,
+    }
     setAuth(authData)
     localStorage.setItem('auth', JSON.stringify(authData))
   }
 
   const logout = () => {
-    setAuth({ token: null, user: null, role: null })
+    setAuth({
+      token: null,
+      user: null,
+      role: null,
+      isPracticeOwner: false,
+      dentistId: null,
+      dentist: null,
+    })
     localStorage.removeItem('auth')
   }
 
@@ -56,16 +73,24 @@ export const AuthProvider = ({ children }) => {
 
   // Keep stored dentist profile in sync with the single canonical clinic name (not legacy per-dentist values).
   useEffect(() => {
-    if (!auth.token || auth.role !== 'doctor' || !auth.user) return
+    const profile = auth.dentist || (auth.role === 'doctor' ? auth.user : null)
+    if (!auth.token || !profile) return
+    if (auth.role !== 'doctor' && !auth.isPracticeOwner) return
     let cancelled = false
     ;(async () => {
       try {
         const { data } = await axios.get('/api/clinic')
         if (cancelled || !data?.clinicName) return
         setAuth((prev) => {
-          if (!prev.token || prev.role !== 'doctor' || !prev.user) return prev
-          if (prev.user.clinicName === data.clinicName) return prev
-          const next = { ...prev, user: { ...prev.user, clinicName: data.clinicName } }
+          if (!prev.token) return prev
+          const current = prev.dentist || (prev.role === 'doctor' ? prev.user : null)
+          if (!current) return prev
+          if (current.clinicName === data.clinicName) return prev
+          const nextProfile = { ...current, clinicName: data.clinicName }
+          const next =
+            prev.isPracticeOwner && prev.dentist
+              ? { ...prev, dentist: nextProfile }
+              : { ...prev, user: nextProfile }
           localStorage.setItem('auth', JSON.stringify(next))
           return next
         })
@@ -76,7 +101,7 @@ export const AuthProvider = ({ children }) => {
     return () => {
       cancelled = true
     }
-  }, [auth.token, auth.role])
+  }, [auth.token, auth.role, auth.isPracticeOwner, auth.dentist])
 
   return (
     <AuthContext.Provider

@@ -44,7 +44,11 @@ const Login = () => {
         return
       }
 
-      login(response.data.token, userPayload, resolvedRole)
+      login(response.data.token, userPayload, resolvedRole, {
+        isPracticeOwner: response.data.isPracticeOwner,
+        dentistId: response.data.dentistId,
+        dentist: response.data.dentist,
+      })
       setLoading(false)
 
       const target = safePostLoginRedirect(resolvedRole, location.state?.from)
@@ -61,16 +65,15 @@ const Login = () => {
       <div className="auth-box">
         <h1>Sign in</h1>
         <p className="auth-subtitle">
-          Enter your email and password. You will be routed to the right workspace based on your account (patient,
-          doctor, reception, or admin).
+          Enter your email and password. Solo practice owners use one login for admin and doctor schedule.
         </p>
 
         {error && <div className="alert alert-error">{error}</div>}
 
         {import.meta.env.DEV && (
           <p className="auth-inline-hint text-secondary" style={{ marginBottom: '0.75rem' }}>
-            Dev default admin (MongoDB + backend running): <strong>admin@example.com</strong> /{' '}
-            <strong>admin12345</strong>
+            Dev practice owner login: <strong>admin@example.com</strong> / <strong>admin12345</strong> (admin +
+            doctor in one account)
           </p>
         )}
 
@@ -115,7 +118,7 @@ const Login = () => {
           New patient? <Link to="/register">Create patient account</Link>
         </p>
         <p className="auth-footer" style={{ fontSize: '0.85rem' }}>
-          Staff and doctors: your account is issued by an administrator.
+          Reception staff are added by the practice owner from the admin area.
         </p>
       </div>
     </div>

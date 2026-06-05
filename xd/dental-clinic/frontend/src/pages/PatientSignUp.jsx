@@ -52,7 +52,7 @@ export default function PatientSignUp() {
       <div className="auth-box">
         <h1>Create patient account</h1>
         <p className="auth-subtitle">
-          This form creates a <strong>patient</strong> account only. Clinic staff and doctors are added by an
+          This form creates a <strong>patient</strong> account only. Clinic staff and your doctor are added by the
           administrator.
         </p>
 

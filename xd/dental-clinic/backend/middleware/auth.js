@@ -10,6 +10,7 @@ export const auth = (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.id;
+    req.dentistId = decoded.dentistId || null;
     const rawRole = decoded.role;
     // Canonical roles + backward compatibility with older tokens
     req.userRole =

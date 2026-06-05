@@ -1,14 +1,17 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useClinic } from '../context/ClinicContext'
 import '../styles/PageFooter.css'
 
 export default function PageFooter() {
+  const { clinicName, tagline } = useClinic()
+
   return (
     <footer className="page-footer">
       <div className="container page-footer__inner">
         <div className="page-footer__block">
-          <strong className="page-footer__brand">DentalClinic</strong>
-          <p className="page-footer__muted">Professional Care Network</p>
+          <strong className="page-footer__brand">{clinicName}</strong>
+          <p className="page-footer__muted">{tagline}</p>
         </div>
         <div className="page-footer__block">
           <h2 className="page-footer__heading">Hours</h2>
@@ -32,7 +35,7 @@ export default function PageFooter() {
       </div>
       <div className="page-footer__bar">
         <div className="container page-footer__bar-inner">
-          <span>© {new Date().getFullYear()} DentalClinic</span>
+          <span>© {new Date().getFullYear()} {clinicName}</span>
         </div>
       </div>
     </footer>

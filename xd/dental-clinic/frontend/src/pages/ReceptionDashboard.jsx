@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
+import { useClinic } from '../context/ClinicContext'
 import { useToast } from '../context/ToastContext'
 import CalendarPicker from '../components/CalendarPicker'
 import { formatCalendarAgendaParts } from '../utils/date'
@@ -110,6 +111,7 @@ function LobbyScheduleTable({
   dense = false,
   deskLayout = 'full',
   tone = 'default',
+  hideClinician = false,
 }) {
   const deskCompactOnly = deskLayout === 'compact'
   const wrapClass = [
@@ -127,7 +129,7 @@ function LobbyScheduleTable({
             <th scope="col">Time</th>
             <th scope="col">Patient</th>
             <th scope="col">Contact</th>
-            <th scope="col">Clinician</th>
+            {!hideClinician ? <th scope="col">Clinician</th> : null}
             <th scope="col">Visit</th>
             <th scope="col">Urgency</th>
             <th scope="col">Desk status</th>
@@ -160,7 +162,7 @@ function LobbyScheduleTable({
                   ) : null}
                   {!phone && !email ? <span className="reception-muted-inline">—</span> : null}
                 </td>
-                <td>{doc}</td>
+                {!hideClinician ? <td>{doc}</td> : null}
                 <td className="reception-data-table__visit">
                   <span className="reception-table-primary">{apt.reason || '—'}</span>
                   {apt.symptoms ? (
@@ -211,7 +213,7 @@ function LobbyScheduleTable({
 }
 
 /** Pipeline: table-like rows (CSS grid) with urgency color accents — easier to scan than a cramped table. */
-function PipelineScheduleGrid({ appointments, onDeskChange, onEdit, onCancel }) {
+function PipelineScheduleGrid({ appointments, onDeskChange, onEdit, onCancel, hideClinician = false }) {
   return (
     <div className="reception-pipeline-grid" role="list" aria-label="Upcoming visits">
       {appointments.map((apt) => {
@@ -234,7 +236,7 @@ function PipelineScheduleGrid({ appointments, onDeskChange, onEdit, onCancel }) 
             <div className="reception-pipeline-card__time">{apt.time}</div>
             <div className="reception-pipeline-card__body">
               <span className="reception-pipeline-card__name">{name}</span>
-              <span className="reception-pipeline-card__doc">{doc}</span>
+              {!hideClinician ? <span className="reception-pipeline-card__doc">{doc}</span> : null}
               {apt.reason ? (
                 <span className="reception-pipeline-card__reason">{apt.reason}</span>
               ) : null}
@@ -276,6 +278,7 @@ function PipelineScheduleGrid({ appointments, onDeskChange, onEdit, onCancel }) 
 
 const ReceptionDashboard = () => {
   const { auth } = useAuth()
+  const { singleDoctorMode } = useClinic()
   const { toastSuccess, toastError } = useToast()
   const authHeader = useMemo(
     () => ({ headers: { Authorization: `Bearer ${auth.token}` } }),
@@ -356,6 +359,15 @@ const ReceptionDashboard = () => {
     }
   }, [])
 
+  const practiceDentist = singleDoctorMode && dentists.length > 0 ? dentists[0] : null
+  const hideDentistPicker = !!practiceDentist
+
+  useEffect(() => {
+    if (practiceDentist) {
+      setBookForm((prev) => (prev.dentistId ? prev : { ...prev, dentistId: practiceDentist._id }))
+    }
+  }, [practiceDentist])
+
   const availabilityAnchor = useMemo(() => {
     const y = monthDate.getFullYear()
     const m = String(monthDate.getMonth() + 1).padStart(2, '0')
@@ -429,7 +441,7 @@ const ReceptionDashboard = () => {
     if (!apt?._id) return
     setEditingApt(apt)
     setEditForm({
-      dentistId: apt?.dentistId?._id || '',
+      dentistId: apt?.dentistId?._id || practiceDentist?._id || '',
       date: apt.date ? new Date(apt.date).toISOString().slice(0, 10) : '',
       time: apt.time || '',
       reason: apt.reason || '',
@@ -694,6 +706,7 @@ const ReceptionDashboard = () => {
                           onEdit={openEditModal}
                           onCancel={handleCancelAppointment}
                           tone="lobby"
+                          hideClinician={hideDentistPicker}
                         />
                       )}
                     </section>
@@ -782,6 +795,7 @@ const ReceptionDashboard = () => {
                           onDeskChange={handleDeskChange}
                           onEdit={openEditModal}
                           onCancel={handleCancelAppointment}
+                          hideClinician={hideDentistPicker}
                         />
                       ) : (
                         <p className="reception-muted reception-prose" style={{ padding: '0.85rem 1rem 1rem' }}>
@@ -799,7 +813,7 @@ const ReceptionDashboard = () => {
                 <div className="reception-panel-intro">
                   <h2 className="reception-panel-h2">Concierge booking</h2>
                   <p className="reception-panel-lead">
-                    Search for a patient, choose a dentist, then pick a time that is still available.
+                    Search for a patient, then pick an available time.
                   </p>
                 </div>
 
@@ -845,35 +859,39 @@ const ReceptionDashboard = () => {
                 </div>
 
               <form onSubmit={handleBook} className="reception-book-form">
-                <div className="form-group">
-                  <label htmlFor="recv-dentist">Dentist</label>
-                  <select
-                    id="recv-dentist"
-                    value={bookForm.dentistId}
-                    onChange={(e) =>
-                      setBookForm((prev) => ({
-                        ...prev,
-                        dentistId: e.target.value,
-                        date: '',
-                        time: '',
-                      }))
-                    }
-                    required
-                  >
-                    <option value="">— Choose dentist —</option>
-                    {dentists.map((d) => (
-                      <option key={d._id} value={d._id}>
-                        {d.fullName} · {d.specialty}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {!hideDentistPicker ? (
+                  <div className="form-group">
+                    <label htmlFor="recv-dentist">Dentist</label>
+                    <select
+                      id="recv-dentist"
+                      value={bookForm.dentistId}
+                      onChange={(e) =>
+                        setBookForm((prev) => ({
+                          ...prev,
+                          dentistId: e.target.value,
+                          date: '',
+                          time: '',
+                        }))
+                      }
+                      required
+                    >
+                      <option value="">— Choose dentist —</option>
+                      {dentists.map((d) => (
+                        <option key={d._id} value={d._id}>
+                          {d.fullName} · {d.specialty}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : null}
 
                 <div className="reception-calendar-wrap">
                   <CalendarPicker
                     title={
                       !bookForm.dentistId
-                        ? 'Select a dentist first'
+                        ? hideDentistPicker
+                          ? 'Loading availability…'
+                          : 'Select a dentist first'
                         : loadingAvail
                         ? 'Loading availability…'
                         : 'Pick an available day'
@@ -995,21 +1013,23 @@ const ReceptionDashboard = () => {
           <div className="reception-modal" onClick={(e) => e.stopPropagation()}>
             <h3>Edit appointment</h3>
             <form onSubmit={handleEditSave} className="reception-edit-form">
-              <div className="form-group">
-                <label>Dentist</label>
-                <select
-                  value={editForm.dentistId}
-                  onChange={(e) => setEditForm((prev) => ({ ...prev, dentistId: e.target.value }))}
-                  required
-                >
-                  <option value="">— Choose dentist —</option>
-                  {dentists.map((d) => (
-                    <option key={d._id} value={d._id}>
-                      {d.fullName} · {d.specialty}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {!hideDentistPicker ? (
+                <div className="form-group">
+                  <label>Dentist</label>
+                  <select
+                    value={editForm.dentistId}
+                    onChange={(e) => setEditForm((prev) => ({ ...prev, dentistId: e.target.value }))}
+                    required
+                  >
+                    <option value="">— Choose dentist —</option>
+                    {dentists.map((d) => (
+                      <option key={d._id} value={d._id}>
+                        {d.fullName} · {d.specialty}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
               <div className="form-row reception-form-row-tight">
                 <div className="form-group">
                   <label>Date</label>

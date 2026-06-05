@@ -474,6 +474,15 @@
   gap: 2rem;
 }
 
+.team-grid--solo {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.team-member--solo {
+  text-align: center;
+}
+
 .team-member {
   text-align: center;
   padding: 2rem;
