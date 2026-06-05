@@ -1,13 +1,15 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useClinic } from '../context/ClinicContext'
 import '../styles/AppointmentCard.css'
 import { formatDisplayDateTime } from '../utils/date'
 
 const AppointmentCard = ({ appointment, onDelete }) => {
+  const { t } = useTranslation()
   const { singleDoctorMode } = useClinic()
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const dentistName = appointment.dentistId?.fullName || appointment.dentist
-  const specialty = appointment.dentistId?.specialty || 'Dental Care'
+  const specialty = appointment.dentistId?.specialty || t('appointment.dentalCare')
   const showClinician = !singleDoctorMode
 
   const statusColors = {
@@ -15,6 +17,8 @@ const AppointmentCard = ({ appointment, onDelete }) => {
     completed: '#6b7280',
     cancelled: '#ef4444',
   }
+
+  const statusLabel = t(`status.${appointment.status}`, { defaultValue: appointment.status })
 
   return (
     <div className="appointment-card">
@@ -29,7 +33,7 @@ const AppointmentCard = ({ appointment, onDelete }) => {
           ) : (
             <>
               <h3 className="appointment-dentist">{formatDisplayDateTime(appointment.date, appointment.time)}</h3>
-              <p className="appointment-date">{appointment.reason || 'Appointment'}</p>
+              <p className="appointment-date">{appointment.reason || t('appointment.appointment')}</p>
             </>
           )}
         </div>
@@ -37,19 +41,19 @@ const AppointmentCard = ({ appointment, onDelete }) => {
           className="appointment-status"
           style={{ backgroundColor: statusColors[appointment.status] }}
         >
-          {appointment.status}
+          {statusLabel}
         </span>
       </div>
 
       <div className="appointment-body">
         {showClinician ? (
           <p className="appointment-reason">
-            <strong>Reason:</strong> {appointment.reason}
+            <strong>{t('appointment.reason')}</strong> {appointment.reason}
           </p>
         ) : null}
         {appointment.symptoms && (
           <p className="appointment-reason">
-            <strong>Symptoms:</strong> {appointment.symptoms}
+            <strong>{t('appointment.symptoms')}</strong> {appointment.symptoms}
           </p>
         )}
       </div>
@@ -61,20 +65,20 @@ const AppointmentCard = ({ appointment, onDelete }) => {
               className="btn btn-outline btn-small appointment-cancel-trigger"
               onClick={() => setShowCancelConfirm(true)}
             >
-              Cancel appointment
+              {t('appointment.cancelAppointment')}
             </button>
             {showCancelConfirm && (
               <div className="appointment-modal-backdrop" role="presentation">
                 <div className="appointment-modal" role="dialog" aria-modal="true">
-                  <h4>Cancel this appointment?</h4>
-                  <p>This action cannot be undone. The slot will be released.</p>
+                  <h4>{t('appointment.cancelConfirmTitle')}</h4>
+                  <p>{t('appointment.cancelConfirmDesc')}</p>
                   <div className="appointment-modal-actions">
                     <button
                       type="button"
                       className="btn btn-outline btn-small"
                       onClick={() => setShowCancelConfirm(false)}
                     >
-                      Keep appointment
+                      {t('appointment.keepAppointment')}
                     </button>
                     <button
                       type="button"
@@ -84,7 +88,7 @@ const AppointmentCard = ({ appointment, onDelete }) => {
                         setShowCancelConfirm(false)
                       }}
                     >
-                      Yes, cancel
+                      {t('appointment.yesCancel')}
                     </button>
                   </div>
                 </div>

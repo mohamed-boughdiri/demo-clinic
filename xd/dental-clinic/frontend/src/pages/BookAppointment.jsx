@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 import { useClinic } from '../context/ClinicContext'
@@ -8,7 +9,19 @@ import EmptyState from '../components/EmptyState'
 import '../styles/BookAppointment.css'
 import CalendarPicker from '../components/CalendarPicker'
 
+const VISIT_REASONS = [
+  { value: 'Regular Checkup', key: 'regularCheckup' },
+  { value: 'Cleaning', key: 'cleaning' },
+  { value: 'Filling', key: 'filling' },
+  { value: 'Root Canal', key: 'rootCanal' },
+  { value: 'Extraction', key: 'extraction' },
+  { value: 'Teeth Whitening', key: 'teethWhitening' },
+  { value: 'Braces Adjustment', key: 'bracesAdjustment' },
+  { value: 'Other', key: 'other' },
+]
+
 const BookAppointment = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { auth } = useAuth()
   const { singleDoctorMode } = useClinic()
@@ -19,17 +32,6 @@ const BookAppointment = () => {
   const [availability, setAvailability] = useState(null)
   const [loadingAvailability, setLoadingAvailability] = useState(false)
   const [monthDate, setMonthDate] = useState(() => new Date())
-
-  const reasons = [
-    'Regular Checkup',
-    'Cleaning',
-    'Filling',
-    'Root Canal',
-    'Extraction',
-    'Teeth Whitening',
-    'Braces Adjustment',
-    'Other',
-  ]
 
   const [formData, setFormData] = useState({
     dentistId: '',
@@ -46,7 +48,7 @@ const BookAppointment = () => {
         const response = await axios.get('/api/dentist/list')
         setDentists(response.data)
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load dentist directory')
+        setError(err.response?.data?.message || t('booking.loadDentistsFailed'))
       } finally {
         setLoadingDentists(false)
       }
@@ -84,7 +86,7 @@ const BookAppointment = () => {
       )
       setAvailability(response.data)
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load availability')
+      setError(err.response?.data?.message || t('booking.loadAvailabilityFailed'))
       setAvailability(null)
     } finally {
       setLoadingAvailability(false)
@@ -147,25 +149,25 @@ const BookAppointment = () => {
       setLoading(false)
       navigate('/patient-workspace')
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to book appointment')
+      setError(err.response?.data?.message || t('booking.bookFailed'))
       setLoading(false)
     }
   }
 
   return (
     <div className="book-appointment-container">
-      <PageMeta title="Book a visit" description="Pick a date and time for your appointment." />
+      <PageMeta title={t('booking.metaTitle')} description={t('booking.metaDescription')} />
       <div className="container">
         <div className="book-header">
-          <h1>Book an Appointment</h1>
-          <p>Choose an available date and time for your visit.</p>
+          <h1>{t('booking.title')}</h1>
+          <p>{t('booking.subtitle')}</p>
         </div>
 
         <div className="book-content">
           {!loadingDentists && dentists.length === 0 ? (
             <EmptyState
-              title="Booking unavailable"
-              description="Online booking is not open yet. Please contact the practice by phone or email."
+              title={t('booking.unavailableTitle')}
+              description={t('booking.unavailableDesc')}
             />
           ) : (
             <>
@@ -174,7 +176,7 @@ const BookAppointment = () => {
 
             {!hideDentistPicker && (
               <div className="form-group">
-                <label htmlFor="dentist">Select Dentist *</label>
+                <label htmlFor="dentist">{t('booking.selectDentist')}</label>
                 <select
                   id="dentist"
                   name="dentistId"
@@ -183,7 +185,7 @@ const BookAppointment = () => {
                   required
                   disabled={loadingDentists}
                 >
-                  <option value="">-- Choose a dentist --</option>
+                  <option value="">{t('booking.chooseDentist')}</option>
                   {dentists.map((dentist) => (
                     <option key={dentist._id} value={dentist._id}>
                       {dentist.fullName} - {dentist.specialty}
@@ -195,17 +197,17 @@ const BookAppointment = () => {
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="date">Appointment Date *</label>
+                <label htmlFor="date">{t('booking.appointmentDate')}</label>
                 <div style={{ opacity: !formData.dentistId ? 0.7 : 1 }}>
                   <CalendarPicker
                     title={
                       !formData.dentistId
                         ? hideDentistPicker
-                          ? 'Loading availability…'
-                          : 'Select a dentist first'
+                          ? t('booking.loadingAvailability')
+                          : t('booking.selectDentistFirst')
                         : loadingAvailability
-                        ? 'Loading availability…'
-                        : 'Pick an available day (badge = free slots)'
+                        ? t('booking.loadingAvailability')
+                        : t('booking.pickAvailableDay')
                     }
                     monthDate={monthDate}
                     availableDates={availability?.availableDates || []}
@@ -224,7 +226,7 @@ const BookAppointment = () => {
                       }
                       disabled={!formData.dentistId}
                     >
-                      Previous
+                      {t('common.previous')}
                     </button>
                     <button
                       type="button"
@@ -234,14 +236,14 @@ const BookAppointment = () => {
                       }
                       disabled={!formData.dentistId}
                     >
-                      Next
+                      {t('common.next')}
                     </button>
                   </div>
                 </div>
               </div>
 
               <div className="form-group">
-                <label htmlFor="time">Time Slot *</label>
+                <label htmlFor="time">{t('booking.timeSlot')}</label>
                 <select
                   id="time"
                   name="time"
@@ -251,7 +253,7 @@ const BookAppointment = () => {
                   disabled={!formData.date}
                 >
                   <option value="">
-                    {formData.date ? '-- Select available time --' : 'Select a date first'}
+                    {formData.date ? t('booking.selectTime') : t('booking.selectDateFirst')}
                   </option>
                   {(selectedDateAvailability?.availableSlots || []).map((slot) => (
                     <option key={slot} value={slot}>
@@ -263,7 +265,7 @@ const BookAppointment = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="reason">Reason for Visit *</label>
+              <label htmlFor="reason">{t('booking.reasonForVisit')}</label>
               <select
                 id="reason"
                 name="reason"
@@ -271,10 +273,10 @@ const BookAppointment = () => {
                 onChange={handleChange}
                 required
               >
-                <option value="">-- Select reason --</option>
-                {reasons.map((reason) => (
-                  <option key={reason} value={reason}>
-                    {reason}
+                <option value="">{t('booking.selectReason')}</option>
+                {VISIT_REASONS.map((reason) => (
+                  <option key={reason.key} value={reason.value}>
+                    {t(`reasons.${reason.key}`)}
                   </option>
                 ))}
               </select>
@@ -282,53 +284,53 @@ const BookAppointment = () => {
 
             <div className="form-row">
               <div className="form-group">
-                <label htmlFor="urgency">Urgency</label>
+                <label htmlFor="urgency">{t('booking.urgency')}</label>
                 <select
                   id="urgency"
                   name="urgency"
                   value={formData.urgency}
                   onChange={handleChange}
                 >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
+                  <option value="low">{t('urgency.low')}</option>
+                  <option value="medium">{t('urgency.medium')}</option>
+                  <option value="high">{t('urgency.high')}</option>
                 </select>
               </div>
               <div className="form-group">
-                <label htmlFor="symptoms">Current Symptoms</label>
+                <label htmlFor="symptoms">{t('booking.symptoms')}</label>
                 <input
                   type="text"
                   id="symptoms"
                   name="symptoms"
                   value={formData.symptoms}
                   onChange={handleChange}
-                  placeholder="Pain, swelling, sensitivity..."
+                  placeholder={t('booking.symptomsPlaceholder')}
                 />
               </div>
             </div>
 
             <div className="form-actions">
               <button type="submit" className="btn btn-primary" disabled={loading}>
-                {loading ? 'Booking...' : 'Book Appointment'}
+                {loading ? t('booking.booking') : t('booking.bookAppointment')}
               </button>
               <button
                 type="button"
                 className="btn btn-outline"
                 onClick={() => navigate('/patient-workspace')}
               >
-                Cancel
+                {t('common.cancel')}
               </button>
             </div>
           </form>
 
           <div className="booking-info">
-            <h3>Booking Information</h3>
+            <h3>{t('booking.infoTitle')}</h3>
             <ul>
-              <li>Appointments are available up to 60 days in advance.</li>
-              <li>Only available days and time slots are selectable.</li>
-              <li>Confirmation appears in your patient dashboard immediately.</li>
-              <li>Reschedule or cancel from your profile timeline.</li>
-              <li>Support: hello@dentalclinic.com</li>
+              <li>{t('booking.info1')}</li>
+              <li>{t('booking.info2')}</li>
+              <li>{t('booking.info3')}</li>
+              <li>{t('booking.info4')}</li>
+              <li>{t('booking.info5')}</li>
             </ul>
           </div>
             </>

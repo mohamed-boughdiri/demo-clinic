@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 import { safePostLoginRedirect } from '../auth/rbac'
 import PageMeta from '../components/PageMeta'
 import '../styles/Auth.css'
 
-/** Email/password only — backend resolves role (patient, doctor, receptionist, admin) and returns JWT. */
 const Login = () => {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const { login } = useAuth()
@@ -39,7 +40,7 @@ const Login = () => {
         resolvedRole === 'doctor' ? response.data.dentist : response.data.user
 
       if (!userPayload) {
-        setError('Login response was incomplete. Try again.')
+        setError(t('auth.incompleteLogin'))
         setLoading(false)
         return
       }
@@ -54,19 +55,17 @@ const Login = () => {
       const target = safePostLoginRedirect(resolvedRole, location.state?.from)
       navigate(target, { replace: true })
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed')
+      setError(err.response?.data?.message || t('auth.loginFailed'))
       setLoading(false)
     }
   }
 
   return (
     <div className="auth-container">
-      <PageMeta title="Sign in" description="Sign in to DentalClinic." />
+      <PageMeta title={t('auth.signInTitle')} description={t('auth.signInMeta')} />
       <div className="auth-box">
-        <h1>Sign in</h1>
-        <p className="auth-subtitle">
-          Enter your email and password. Solo practice owners use one login for admin and doctor schedule.
-        </p>
+        <h1>{t('auth.signInTitle')}</h1>
+        <p className="auth-subtitle">{t('auth.signInSubtitle')}</p>
 
         {error && <div className="alert alert-error">{error}</div>}
 
@@ -79,7 +78,7 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t('common.email')}</label>
             <input
               type="email"
               id="email"
@@ -93,7 +92,7 @@ const Login = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('common.password')}</label>
             <input
               type="password"
               id="password"
@@ -105,20 +104,20 @@ const Login = () => {
               autoComplete="current-password"
             />
             <p className="auth-inline-hint">
-              <Link to="/forgot-password">Forgot password?</Link> — choose account type on the next screen if unsure.
+              <Link to="/forgot-password">{t('auth.forgotPassword')}</Link> {t('auth.forgotPasswordHint')}
             </p>
           </div>
 
           <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? t('auth.signingIn') : t('common.signIn')}
           </button>
         </form>
 
         <p className="auth-footer">
-          New patient? <Link to="/register">Create patient account</Link>
+          {t('auth.newPatient')} <Link to="/register">{t('auth.createPatientAccount')}</Link>
         </p>
         <p className="auth-footer" style={{ fontSize: '0.85rem' }}>
-          Reception staff are added by the practice owner from the admin area.
+          {t('auth.receptionHint')}
         </p>
       </div>
     </div>

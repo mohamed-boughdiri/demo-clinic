@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useTranslation, Trans } from 'react-i18next'
 import axios from 'axios'
 import PageMeta from '../components/PageMeta'
 import '../styles/Auth.css'
 
-/**
- * Public registration — patients only. Staff and doctors are provisioned by an admin.
- */
 export default function PatientSignUp() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -40,7 +39,7 @@ export default function PatientSignUp() {
       })
       navigate('/login')
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed')
+      setError(err.response?.data?.message || t('auth.registrationFailed'))
     } finally {
       setLoading(false)
     }
@@ -48,12 +47,11 @@ export default function PatientSignUp() {
 
   return (
     <div className="auth-container">
-      <PageMeta title="Create patient account" description="Register as a patient at DentalClinic." />
+      <PageMeta title={t('auth.registerTitle')} description={t('auth.registerMeta')} />
       <div className="auth-box">
-        <h1>Create patient account</h1>
+        <h1>{t('auth.registerTitle')}</h1>
         <p className="auth-subtitle">
-          This form creates a <strong>patient</strong> account only. Clinic staff and your doctor are added by the
-          administrator.
+          <Trans i18nKey="auth.registerSubtitle" />
         </p>
 
         {error ? <div className="alert alert-error">{error}</div> : null}
@@ -61,7 +59,7 @@ export default function PatientSignUp() {
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="firstName">First name</label>
+              <label htmlFor="firstName">{t('common.firstName')}</label>
               <input
                 id="firstName"
                 name="firstName"
@@ -71,12 +69,12 @@ export default function PatientSignUp() {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="lastName">Last name</label>
+              <label htmlFor="lastName">{t('common.lastName')}</label>
               <input id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} required />
             </div>
           </div>
           <div className="form-group">
-            <label htmlFor="dateOfBirth">Date of birth</label>
+            <label htmlFor="dateOfBirth">{t('common.dateOfBirth')}</label>
             <input
               id="dateOfBirth"
               name="dateOfBirth"
@@ -87,16 +85,16 @@ export default function PatientSignUp() {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t('common.email')}</label>
             <input id="email" name="email" type="email" value={formData.email} onChange={handleChange} required />
           </div>
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="phone">Phone</label>
+              <label htmlFor="phone">{t('common.phone')}</label>
               <input id="phone" name="phone" type="tel" value={formData.phone} onChange={handleChange} required />
             </div>
             <div className="form-group">
-              <label htmlFor="password">Password</label>
+              <label htmlFor="password">{t('common.password')}</label>
               <input
                 id="password"
                 name="password"
@@ -109,15 +107,15 @@ export default function PatientSignUp() {
               />
             </div>
           </div>
-          <p className="auth-inline-hint text-secondary">At least 8 characters</p>
+          <p className="auth-inline-hint text-secondary">{t('auth.minPassword')}</p>
 
           <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-            {loading ? 'Creating account…' : 'Create patient account'}
+            {loading ? t('auth.creatingAccount') : t('auth.registerTitle')}
           </button>
         </form>
 
         <p className="auth-footer">
-          Already have an account? <Link to="/login">Sign in</Link>
+          {t('auth.alreadyHaveAccount')} <Link to="/login">{t('common.signIn')}</Link>
         </p>
       </div>
     </div>

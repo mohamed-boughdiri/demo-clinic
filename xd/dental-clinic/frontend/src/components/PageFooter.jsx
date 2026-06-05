@@ -1,9 +1,11 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useClinic } from '../context/ClinicContext'
 import '../styles/PageFooter.css'
 
 export default function PageFooter() {
+  const { t } = useTranslation()
   const { clinicName, tagline } = useClinic()
 
   return (
@@ -14,12 +16,12 @@ export default function PageFooter() {
           <p className="page-footer__muted">{tagline}</p>
         </div>
         <div className="page-footer__block">
-          <h2 className="page-footer__heading">Hours</h2>
-          <p>Mon–Fri · 8:00 – 18:00</p>
-          <p>Sat · 9:00 – 14:00</p>
+          <h2 className="page-footer__heading">{t('common.hours')}</h2>
+          <p>{t('footer.hoursWeekday')}</p>
+          <p>{t('footer.hoursSaturday')}</p>
         </div>
         <div className="page-footer__block">
-          <h2 className="page-footer__heading">Contact</h2>
+          <h2 className="page-footer__heading">{t('common.contact')}</h2>
           <p>
             <a href="tel:+15551234567">+1 (555) 123-4567</a>
           </p>
@@ -28,9 +30,9 @@ export default function PageFooter() {
           </p>
         </div>
         <div className="page-footer__block page-footer__links">
-          <Link to="/privacy">Privacy</Link>
-          <Link to="/login">Sign in</Link>
-          <Link to="/register">Sign up</Link>
+          <Link to="/privacy">{t('common.privacy')}</Link>
+          <Link to="/login">{t('common.signIn')}</Link>
+          <Link to="/register">{t('common.signUp')}</Link>
         </div>
       </div>
       <div className="page-footer__bar">

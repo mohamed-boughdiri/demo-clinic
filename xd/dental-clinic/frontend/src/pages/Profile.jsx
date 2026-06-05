@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
+import { getActiveLocale } from '../i18n'
 import AppointmentCard from '../components/AppointmentCard'
 import PageMeta from '../components/PageMeta'
 import EmptyState from '../components/EmptyState'
@@ -9,6 +11,7 @@ import '../styles/Profile.css'
 import { formatDisplayDate } from '../utils/date'
 
 const Profile = () => {
+  const { t, i18n } = useTranslation()
   const { auth } = useAuth()
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
@@ -59,7 +62,7 @@ const Profile = () => {
       })
       setLoading(false)
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch appointments')
+      setError(err.response?.data?.message || t('profile.fetchFailed'))
       setLoading(false)
     }
   }
@@ -101,11 +104,11 @@ const Profile = () => {
           },
         }
       )
-      setSuccessMessage('Medical profile updated successfully')
+      setSuccessMessage(t('profile.medicalUpdated'))
       await fetchAppointments()
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update medical profile')
+      setError(err.response?.data?.message || t('profile.medicalUpdateFailed'))
     }
   }
 
@@ -116,11 +119,11 @@ const Profile = () => {
           Authorization: `Bearer ${auth.token}`,
         },
       })
-      setSuccessMessage('Appointment cancelled successfully')
+      setSuccessMessage(t('profile.appointmentCancelled'))
       await fetchAppointments()
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to cancel appointment')
+      setError(err.response?.data?.message || t('profile.cancelFailed'))
     }
   }
 
@@ -132,76 +135,76 @@ const Profile = () => {
     const groups = new Map()
     filtered.forEach((appointment) => {
       const d = new Date(appointment.date)
-      const key = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+      const key = d.toLocaleDateString(getActiveLocale(), { year: 'numeric', month: 'long' })
       if (!groups.has(key)) groups.set(key, [])
       groups.get(key).push(appointment)
     })
 
     return Array.from(groups.entries())
-  }, [appointments, timelineFilter])
+  }, [appointments, timelineFilter, i18n.language])
 
   return (
     <div className="profile-container">
-      <PageMeta title="Patient workspace" description="Your profile, medical details, and clinical timeline." />
+      <PageMeta title={t('profile.metaTitle')} description={t('profile.metaDescription')} />
       <div className="container">
         <div className="profile-header">
-          <h1>Patient Health Workspace</h1>
+          <h1>{t('profile.title')}</h1>
           <p>{auth.user?.firstName} {auth.user?.lastName}</p>
         </div>
 
         {summary && (
           <div className="profile-stats">
             <div className="profile-stat-card">
-              <span className="profile-stat-label">Total Visits</span>
+              <span className="profile-stat-label">{t('profile.totalVisits')}</span>
               <span className="profile-stat-value">{summary.totalVisits}</span>
             </div>
             <div className="profile-stat-card">
-              <span className="profile-stat-label">Completed Treatments</span>
+              <span className="profile-stat-label">{t('profile.completedTreatments')}</span>
               <span className="profile-stat-value">{summary.completedTreatments}</span>
             </div>
             <div className="profile-stat-card">
-              <span className="profile-stat-label">Upcoming Appointments</span>
+              <span className="profile-stat-label">{t('profile.upcomingAppointments')}</span>
               <span className="profile-stat-value">{summary.upcomingAppointments}</span>
             </div>
             <div className="profile-stat-card">
-              <span className="profile-stat-label">Latest Diagnosis</span>
-              <span className="profile-stat-text">{summary.latestDiagnosis || 'No diagnosis yet'}</span>
+              <span className="profile-stat-label">{t('profile.latestDiagnosis')}</span>
+              <span className="profile-stat-text">{summary.latestDiagnosis || t('profile.noDiagnosis')}</span>
             </div>
           </div>
         )}
 
         <div className="profile-content">
           <section className="profile-section">
-            <h2>Personal Information</h2>
+            <h2>{t('profile.personalInfo')}</h2>
             <div className="user-info">
               <div className="info-card">
                 <div className="info-group">
-                  <label>First Name</label>
+                  <label>{t('common.firstName')}</label>
                   <p>{auth.user?.firstName}</p>
                 </div>
                 <div className="info-group">
-                  <label>Last Name</label>
+                  <label>{t('common.lastName')}</label>
                   <p>{auth.user?.lastName}</p>
                 </div>
               </div>
               <div className="info-card">
                 <div className="info-group">
-                  <label>Date of Birth</label>
+                  <label>{t('common.dateOfBirth')}</label>
                   <p>{formatDisplayDate(auth.user?.dateOfBirth)}</p>
                 </div>
                 <div className="info-group">
-                  <label>Email</label>
+                  <label>{t('common.email')}</label>
                   <p>{auth.user?.email}</p>
                 </div>
               </div>
               <div className="info-card">
                 <div className="info-group">
-                  <label>Phone</label>
+                  <label>{t('common.phone')}</label>
                   <p>{auth.user?.phone}</p>
                 </div>
                 <div className="info-group">
-                  <label>Health Timeline</label>
-                  <p>Treatment details are tracked in your clinical timeline.</p>
+                  <label>{t('profile.healthTimeline')}</label>
+                  <p>{t('profile.healthTimelineDesc')}</p>
                 </div>
               </div>
             </div>
@@ -209,60 +212,60 @@ const Profile = () => {
 
           <section className="profile-section">
             <div className="section-heading-row">
-              <h2>Medical Profile</h2>
+              <h2>{t('profile.medicalProfile')}</h2>
               <button
                 type="button"
                 className="btn btn-outline btn-small"
                 onClick={() => setShowMedicalProfile((prev) => !prev)}
               >
-                {showMedicalProfile ? 'Hide Details' : 'Edit Details'}
+                {showMedicalProfile ? t('profile.hideDetails') : t('profile.editDetails')}
               </button>
             </div>
             {showMedicalProfile && (
             <form className="clinical-form" onSubmit={handleMedicalProfileSave}>
               <div className="info-card">
                 <div className="form-group">
-                  <label>Blood Type</label>
+                  <label>{t('profile.bloodType')}</label>
                   <input
                     name="bloodType"
                     value={medicalProfile.bloodType}
                     onChange={handleMedicalProfileChange}
-                    placeholder="A+, O-, etc."
+                    placeholder={t('profile.bloodTypePlaceholder')}
                   />
                 </div>
                 <div className="form-group">
-                  <label>Current Medications</label>
+                  <label>{t('profile.medications')}</label>
                   <input
                     name="medications"
                     value={medicalProfile.medications}
                     onChange={handleMedicalProfileChange}
-                    placeholder="Comma-separated"
+                    placeholder={t('profile.commaSeparated')}
                   />
                 </div>
               </div>
               <div className="info-card">
                 <div className="form-group">
-                  <label>Allergies</label>
+                  <label>{t('profile.allergies')}</label>
                   <input
                     name="allergies"
                     value={medicalProfile.allergies}
                     onChange={handleMedicalProfileChange}
-                    placeholder="Latex, penicillin..."
+                    placeholder={t('profile.allergiesPlaceholder')}
                   />
                 </div>
                 <div className="form-group">
-                  <label>Chronic Conditions</label>
+                  <label>{t('profile.chronicConditions')}</label>
                   <input
                     name="chronicConditions"
                     value={medicalProfile.chronicConditions}
                     onChange={handleMedicalProfileChange}
-                    placeholder="Diabetes, hypertension..."
+                    placeholder={t('profile.chronicPlaceholder')}
                   />
                 </div>
               </div>
               <div className="info-card">
                 <div className="form-group">
-                  <label>Emergency Contact Name</label>
+                  <label>{t('profile.emergencyName')}</label>
                   <input
                     name="emergencyContactName"
                     value={medicalProfile.emergencyContactName}
@@ -270,7 +273,7 @@ const Profile = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Emergency Contact Phone</label>
+                  <label>{t('profile.emergencyPhone')}</label>
                   <input
                     name="emergencyContactPhone"
                     value={medicalProfile.emergencyContactPhone}
@@ -279,17 +282,17 @@ const Profile = () => {
                 </div>
               </div>
               <div className="form-group">
-                <label>Clinical Notes</label>
+                <label>{t('profile.clinicalNotes')}</label>
                 <textarea
                   name="notes"
                   rows="3"
                   value={medicalProfile.notes}
                   onChange={handleMedicalProfileChange}
-                  placeholder="Any relevant history your dentist should know"
+                  placeholder={t('profile.clinicalNotesPlaceholder')}
                 />
               </div>
               <button className="btn btn-primary" type="submit">
-                Save Medical Profile
+                {t('profile.saveMedicalProfile')}
               </button>
             </form>
             )}
@@ -298,15 +301,15 @@ const Profile = () => {
           {/* Appointments */}
           <section className="profile-section appointments-section">
             <div className="section-heading-row">
-              <h2>Clinical Timeline</h2>
+              <h2>{t('profile.clinicalTimeline')}</h2>
               <select
                 className="timeline-filter"
                 value={timelineFilter}
                 onChange={(e) => setTimelineFilter(e.target.value)}
               >
-                <option value="all">All Visits</option>
-                <option value="scheduled">Upcoming</option>
-                <option value="completed">Completed</option>
+                <option value="all">{t('profile.allVisits')}</option>
+                <option value="scheduled">{t('profile.upcoming')}</option>
+                <option value="completed">{t('status.completed')}</option>
               </select>
             </div>
 
@@ -317,22 +320,22 @@ const Profile = () => {
             {error && <div className="alert alert-error">{error}</div>}
 
             {loading ? (
-              <div className="skeleton-stack" aria-busy="true" aria-label="Loading timeline">
+              <div className="skeleton-stack" aria-busy="true" aria-label={t('profile.loadingTimeline')}>
                 <SkeletonText lines={2} />
                 <SkeletonCard />
                 <SkeletonCard />
               </div>
             ) : appointments.length === 0 ? (
               <EmptyState
-                title="No visits yet"
-                description="Book your first appointment to see it on your clinical timeline."
-                actionLabel="Book an appointment"
+                title={t('profile.noVisits')}
+                description={t('profile.noVisitsDesc')}
+                actionLabel={t('profile.bookAppointment')}
                 actionTo="/patient-workspace/book"
               />
             ) : groupedAppointments.length === 0 ? (
               <EmptyState
-                title="No visits match this filter"
-                description="Try showing all visits or a different status."
+                title={t('profile.noFilterMatch')}
+                description={t('profile.noFilterDesc')}
               />
             ) : (
               <div className="appointments-list">

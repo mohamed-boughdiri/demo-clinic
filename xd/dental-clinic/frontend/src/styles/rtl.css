@@ -1,0 +1,46 @@
+[dir='rtl'] body {
+  font-family: 'Inter', 'Segoe UI', 'Tahoma', 'Arial', sans-serif;
+}
+
+[dir='rtl'] .navbar-menu {
+  flex-direction: row-reverse;
+}
+
+[dir='rtl'] .navbar-container {
+  flex-direction: row-reverse;
+}
+
+[dir='rtl'] .logo-text {
+  text-align: start;
+}
+
+[dir='rtl'] .patient-workspace__nav {
+  flex-direction: row-reverse;
+}
+
+[dir='rtl'] .form-row,
+[dir='rtl'] .hero-buttons,
+[dir='rtl'] .form-actions {
+  flex-direction: row-reverse;
+}
+
+[dir='rtl'] .section-heading-row {
+  flex-direction: row-reverse;
+}
+
+[dir='rtl'] .appointment-header {
+  flex-direction: row-reverse;
+}
+
+[dir='rtl'] .appointment-modal-actions {
+  flex-direction: row-reverse;
+}
+
+[dir='rtl'] .page-footer__inner {
+  direction: rtl;
+}
+
+[dir='rtl'] .calendar-weekdays,
+[dir='rtl'] .calendar-grid {
+  direction: rtl;
+}

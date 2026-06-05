@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import PageFooter from './components/PageFooter'
@@ -20,10 +21,12 @@ import NotFound from './pages/NotFound'
 import Unauthorized from './pages/Unauthorized'
 
 function App() {
+  const { t } = useTranslation()
+
   return (
     <Router>
       <a href="#main-content" className="skip-to-main">
-        Skip to main content
+        {t('common.skipToMain')}
       </a>
       <Navbar />
       <main id="main-content" className="site-main" tabIndex={-1}>

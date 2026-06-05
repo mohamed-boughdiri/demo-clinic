@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation, Trans } from 'react-i18next'
 import PageMeta from '../components/PageMeta'
 import { useAuth } from '../context/AuthContext'
 import { useClinic } from '../context/ClinicContext'
@@ -16,6 +17,7 @@ function AdminCardIcon({ children }) {
 }
 
 export default function AdminDashboard() {
+  const { t } = useTranslation()
   const { auth } = useAuth()
   const { singleDoctorMode } = useClinic()
   const isPracticeOwner = auth.isPracticeOwner && singleDoctorMode
@@ -23,19 +25,20 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-hub">
-      <PageMeta title="Admin" description="Clinic administration." />
-      <h1 className="admin-hub__title">Administration</h1>
+      <PageMeta title={t('admin.metaTitle')} description={t('admin.metaDescription')} />
+      <h1 className="admin-hub__title">{t('admin.title')}</h1>
       <p className="admin-hub__lead">
-        {isPracticeOwner
-          ? 'You run this solo practice with one login. Manage staff here, then open '
-          : 'Add people who work at the clinic. Patients sign themselves up from the public '}
         {isPracticeOwner ? (
           <>
-            <Link to="/doctor-dashboard">My schedule</Link> for your patient appointments.
+            {t('admin.soloLead')}
+            <Link to="/doctor-dashboard">{t('admin.mySchedule')}</Link>
+            {t('admin.soloLeadEnd')}
           </>
         ) : (
           <>
-            <Link to="/register">patient registration</Link> page.
+            {t('admin.multiLead')}
+            <Link to="/register">{t('admin.patientRegistration')}</Link>
+            {t('admin.multiLeadEnd')}
           </>
         )}
       </p>
@@ -52,13 +55,13 @@ export default function AdminDashboard() {
                 strokeLinejoin="round"
               />
             </AdminCardIcon>
-            <h2>My schedule</h2>
+            <h2>{t('admin.mySchedule')}</h2>
             <p>
               {doctorProfile?.fullName
-                ? `${doctorProfile.fullName} — view today’s appointments, patients, and notes.`
-                : 'View your appointments, patients, and clinical notes.'}
+                ? t('admin.myScheduleDesc', { name: doctorProfile.fullName })
+                : t('admin.myScheduleDescDefault')}
             </p>
-            <span className="admin-hub__card-cta">Open doctor dashboard →</span>
+            <span className="admin-hub__card-cta">{t('admin.openDoctorDashboard')}</span>
           </Link>
         ) : null}
 
@@ -79,9 +82,9 @@ export default function AdminDashboard() {
               strokeLinejoin="round"
             />
           </AdminCardIcon>
-          <h2>Add receptionist</h2>
-          <p>Front desk can search patients, manage the lobby, and book appointments for them.</p>
-          <span className="admin-hub__card-cta">Open form →</span>
+          <h2>{t('admin.addReceptionist')}</h2>
+          <p>{t('admin.addReceptionistDesc')}</p>
+          <span className="admin-hub__card-cta">{t('admin.openForm')}</span>
         </Link>
 
         <Link className="admin-hub__card" to="/admin-dashboard/provision?tab=staff&staffRole=admin">
@@ -101,9 +104,9 @@ export default function AdminDashboard() {
               strokeLinejoin="round"
             />
           </AdminCardIcon>
-          <h2>Add another administrator</h2>
-          <p>Optional backup admin with the same powers (separate email and password).</p>
-          <span className="admin-hub__card-cta">Open form →</span>
+          <h2>{t('admin.addAdmin')}</h2>
+          <p>{t('admin.addAdminDesc')}</p>
+          <span className="admin-hub__card-cta">{t('admin.openForm')}</span>
         </Link>
 
         {!isPracticeOwner && !singleDoctorMode ? (
@@ -117,23 +120,24 @@ export default function AdminDashboard() {
                 strokeLinejoin="round"
               />
             </AdminCardIcon>
-            <h2>Set up your doctor</h2>
-            <p>Create the doctor account for this practice.</p>
-            <span className="admin-hub__card-cta">Open form →</span>
+            <h2>{t('admin.setupDoctor')}</h2>
+            <p>{t('admin.setupDoctorDesc')}</p>
+            <span className="admin-hub__card-cta">{t('admin.openForm')}</span>
           </Link>
         ) : null}
       </div>
 
       {isPracticeOwner ? (
         <div className="admin-hub__note">
-          <strong>One login for everything:</strong> you are signed in as admin and doctor with{' '}
-          <strong>{auth.user?.email}</strong>. Use <strong>Admin</strong> for staff setup and{' '}
-          <strong>My schedule</strong> for your clinical work.
+          <Trans
+            i18nKey="admin.soloNote"
+            values={{ email: auth.user?.email }}
+            components={{ strong: <strong /> }}
+          />
         </div>
       ) : (
         <div className="admin-hub__note">
-          <strong>Tip:</strong> In solo practice mode the admin account is also the doctor — sign in with your admin
-          email once to access both areas.
+          <Trans i18nKey="admin.tipNote" components={{ strong: <strong /> }} />
         </div>
       )}
     </div>

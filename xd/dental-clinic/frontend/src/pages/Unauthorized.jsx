@@ -1,10 +1,12 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useTranslation, Trans } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import PageMeta from '../components/PageMeta'
 import { dashboardPathForRole } from '../auth/rbac'
 
 export default function Unauthorized() {
+  const { t } = useTranslation()
   const { auth, isAuthenticated } = useAuth()
   const location = useLocation()
   const tried = location.state?.from || 'that page'
@@ -12,21 +14,25 @@ export default function Unauthorized() {
 
   return (
     <div className="container text-center" style={{ padding: '3rem 1rem' }}>
-      <PageMeta title="Unauthorized" description="You do not have access to this area." />
-      <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Access denied</h1>
+      <PageMeta title={t('unauthorized.title')} description={t('unauthorized.description')} />
+      <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{t('unauthorized.accessDenied')}</h1>
       <p className="text-secondary" style={{ marginBottom: '0.35rem' }}>
-        Your role does not allow opening <strong>{tried}</strong>.
+        <Trans i18nKey="unauthorized.roleDenied" values={{ page: tried }} components={{ strong: <strong /> }} />
       </p>
       {isAuthenticated ? (
         <p className="text-secondary" style={{ marginBottom: '1.25rem' }}>
-          Signed in as <strong>{auth.user?.email}</strong> ({auth.role}).
+          <Trans
+            i18nKey="unauthorized.signedInAs"
+            values={{ email: auth.user?.email, role: auth.role }}
+            components={{ strong: <strong /> }}
+          />
         </p>
       ) : null}
       <Link to={home} className="btn btn-primary">
-        {isAuthenticated ? 'Go to your dashboard' : 'Sign in'}
+        {isAuthenticated ? t('unauthorized.goToDashboard') : t('common.signIn')}
       </Link>
       <p style={{ marginTop: '1rem' }}>
-        <Link to="/">Home</Link>
+        <Link to="/">{t('common.home')}</Link>
       </p>
     </div>
   )

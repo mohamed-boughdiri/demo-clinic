@@ -1,4 +1,6 @@
 import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { getActiveLocale } from '../i18n'
 import '../styles/CalendarPicker.css'
 
 const pad2 = (n) => String(n).padStart(2, '0')
@@ -13,17 +15,28 @@ const CalendarPicker = ({
   availableDates = [],
   selectedDate,
   onSelect,
-  title = 'Select date',
+  title,
   dateBadges = {},
-  badgeAriaLabel = (dateKey, badgeText) => `${dateKey} badge ${badgeText}`,
+  badgeAriaLabel,
 }) => {
+  const { t } = useTranslation()
   const availableSet = useMemo(() => new Set(availableDates), [availableDates])
+
+  const weekdays = [
+    t('calendar.mon'),
+    t('calendar.tue'),
+    t('calendar.wed'),
+    t('calendar.thu'),
+    t('calendar.fri'),
+    t('calendar.sat'),
+    t('calendar.sun'),
+  ]
 
   const grid = useMemo(() => {
     const start = startOfMonth(monthDate)
     const end = endOfMonth(monthDate)
 
-    const firstDayIndex = (start.getDay() + 6) % 7 // Monday=0 ... Sunday=6
+    const firstDayIndex = (start.getDay() + 6) % 7
     const daysInMonth = end.getDate()
 
     const cells = []
@@ -47,22 +60,27 @@ const CalendarPicker = ({
     return cells
   }, [availableSet, dateBadges, monthDate, selectedDate])
 
-  const monthLabel = monthDate.toLocaleDateString('en-US', {
+  const monthLabel = monthDate.toLocaleDateString(getActiveLocale(), {
     year: 'numeric',
     month: 'long',
   })
+
+  const resolvedTitle = title ?? t('calendar.selectDate')
+  const resolvedBadgeAria =
+    badgeAriaLabel ||
+    ((dateKey, badgeText) => t('calendar.badgeAria', { date: dateKey, count: badgeText }))
 
   return (
     <div className="calendar-picker">
       <div className="calendar-header">
         <div>
-          <div className="calendar-title">{title}</div>
+          <div className="calendar-title">{resolvedTitle}</div>
           <div className="calendar-month">{monthLabel}</div>
         </div>
       </div>
 
       <div className="calendar-weekdays">
-        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((w) => (
+        {weekdays.map((w) => (
           <div className="weekday" key={w}>
             {w}
           </div>
@@ -82,13 +100,13 @@ const CalendarPicker = ({
               } ${cell.badge ? 'has-badge' : ''}`}
               onClick={() => cell.isAvailable && onSelect?.(cell.dateKey)}
               disabled={!cell.isAvailable}
-              aria-label={`Select ${cell.dateKey}`}
+              aria-label={`${t('calendar.selectDate')} ${cell.dateKey}`}
             >
               <span className="day-number">{cell.label}</span>
               {cell.badge ? (
                 <span
                   className={`day-indicator ${cell.badge.variant || 'neutral'}`}
-                  aria-label={badgeAriaLabel(cell.dateKey, cell.badge.text)}
+                  aria-label={resolvedBadgeAria(cell.dateKey, cell.badge.text)}
                 />
               ) : null}
             </button>

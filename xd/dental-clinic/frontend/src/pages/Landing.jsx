@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useClinic } from '../context/ClinicContext'
 import PageMeta from '../components/PageMeta'
 import '../styles/Landing.css'
@@ -8,6 +9,7 @@ import followUpImage from '../assets/landing/follow-up.jpg'
 import digitalClinicalRecordsImage from '../assets/landing/digital-clinical-records.jpg'
 
 const Landing = () => {
+  const { t } = useTranslation()
   const { clinicName } = useClinic()
 
   const fallbackVisual = (title, tone = '#0f4c81') =>
@@ -32,49 +34,43 @@ const Landing = () => {
 
   const trustHighlights = [
     {
-      title: 'Premium sterilization',
-      text: 'Modern protocols and monitored sterilization rooms',
+      title: t('landing.sterilization'),
+      text: t('landing.sterilizationDesc'),
       image:
         'https://images.unsplash.com/photo-1606265752439-1f18756aa5fc?auto=format&fit=crop&w=1200&q=80',
     },
     {
-      title: 'Transparent treatment',
-      text: 'Clear plans, follow-ups, and explained procedures',
+      title: t('landing.transparentTreatment'),
+      text: t('landing.transparentTreatmentDesc'),
       image:
         'https://images.unsplash.com/photo-1588776814546-daab30f310ce?auto=format&fit=crop&w=1200&q=80',
     },
     {
-      title: 'Personalized care',
-      text: 'Continuity of care with your history kept in one place',
+      title: t('landing.personalizedCare'),
+      text: t('landing.personalizedCareDesc'),
       image:
         'https://images.unsplash.com/photo-1629909615184-74f495363b67?auto=format&fit=crop&w=1200&q=80',
     },
     {
-      title: 'Digital clinical records',
-      text: 'Organized timelines with diagnosis and treatment notes',
+      title: t('landing.digitalRecords'),
+      text: t('landing.digitalRecordsDesc'),
       image: digitalClinicalRecordsImage,
     },
   ]
 
   return (
     <div className="landing">
-      <PageMeta
-        title="Home"
-        description="Personal dental care — book visits and stay connected with your practice."
-      />
+      <PageMeta title={t('landing.metaTitle')} description={t('landing.metaDescription')} />
       <section className="hero">
         <div className="hero-content">
-          <h1>Personal Dental Care, Fully Connected</h1>
-          <p>
-            A modern practice where patients, treatment history, and follow-up care stay linked in
-            one clear journey.
-          </p>
+          <h1>{t('landing.heroTitle')}</h1>
+          <p>{t('landing.heroSubtitle')}</p>
           <div className="hero-buttons">
             <Link to="/patient-workspace/book" className="btn btn-primary">
-              Book an Appointment
+              {t('landing.bookAppointment')}
             </Link>
             <Link to="/register" className="btn btn-outline">
-              Sign up
+              {t('common.signUp')}
             </Link>
           </div>
         </div>
@@ -84,66 +80,66 @@ const Landing = () => {
         <div className="container live-strip-grid">
           <article>
             <strong>+1,200</strong>
-            <span>Patients managed through unified clinical files.</span>
+            <span>{t('landing.statPatients')}</span>
           </article>
           <article>
             <strong>98%</strong>
-            <span>Follow-up adherence with a consistent care plan.</span>
+            <span>{t('landing.statFollowUp')}</span>
           </article>
           <article>
             <strong>Same-day</strong>
-            <span>Clear availability and a straightforward booking flow.</span>
+            <span>{t('landing.statSameDay')}</span>
           </article>
         </div>
       </section>
 
       <section className="services services-premium">
         <div className="container">
-          <h2>Designed for Trust and Clarity</h2>
+          <h2>{t('landing.trustTitle')}</h2>
           <div className="feature-grid">
             <div className="feature-tile">
               <img
                 className="feature-media"
                 data-variant="a"
                 src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=1200&q=80"
-                alt="Appointment coordination visual"
-                onError={withFallback('Connected Appointments', '#0f4c81')}
+                alt={t('landing.connectedAppointments')}
+                onError={withFallback(t('landing.connectedAppointments'), '#0f4c81')}
               />
-              <h3>Connected Appointments</h3>
-              <p>Book online and get confirmation straight to your patient dashboard.</p>
+              <h3>{t('landing.connectedAppointments')}</h3>
+              <p>{t('landing.connectedAppointmentsDesc')}</p>
             </div>
             <div className="feature-tile">
               <img
                 className="feature-media"
                 data-variant="b"
                 src="https://images.unsplash.com/photo-1588776814546-daab30f310ce?auto=format&fit=crop&w=1200&q=80"
-                alt="Clinical context visual"
-                onError={withFallback('Clinical Context', '#12795f')}
+                alt={t('landing.clinicalContext')}
+                onError={withFallback(t('landing.clinicalContext'), '#12795f')}
               />
-              <h3>Clinical Context</h3>
-              <p>Symptoms, urgency, diagnosis, and plans stay organized in one timeline.</p>
+              <h3>{t('landing.clinicalContext')}</h3>
+              <p>{t('landing.clinicalContextDesc')}</p>
             </div>
             <div className="feature-tile">
               <img
                 className="feature-media"
                 data-variant="c"
                 src={followUpImage}
-                alt="Follow-up treatment visual"
-                onError={withFallback('Follow-up Planning', '#4c56bc')}
+                alt={t('landing.followUpPlanning')}
+                onError={withFallback(t('landing.followUpPlanning'), '#4c56bc')}
               />
-              <h3>Follow‑up Planning</h3>
-              <p>Every visit can produce notes, medications, procedures, and follow‑up dates.</p>
+              <h3>{t('landing.followUpPlanning')}</h3>
+              <p>{t('landing.followUpPlanningDesc')}</p>
             </div>
             <div className="feature-tile">
               <img
                 className="feature-media"
                 data-variant="d"
                 src="https://images.unsplash.com/photo-1598257006458-087169a1f08d?auto=format&fit=crop&w=1200&q=80"
-                alt="Schedule management visual"
-                onError={withFallback('Schedule Visibility', '#ad6e0d')}
+                alt={t('landing.scheduleVisibility')}
+                onError={withFallback(t('landing.scheduleVisibility'), '#ad6e0d')}
               />
-              <h3>Schedule Visibility</h3>
-              <p>See open slots and pick a time that works for you.</p>
+              <h3>{t('landing.scheduleVisibility')}</h3>
+              <p>{t('landing.scheduleVisibilityDesc')}</p>
             </div>
           </div>
         </div>
@@ -152,8 +148,8 @@ const Landing = () => {
       <section className="trust-strip">
         <div className="container">
           <div className="trust-strip-header">
-            <h2>Why Patients Feel Confident Here</h2>
-            <p>Every touchpoint is designed to feel clear, modern, and trustworthy.</p>
+            <h2>{t('landing.whyPatientsTitle')}</h2>
+            <p>{t('landing.whyPatientsSubtitle')}</p>
           </div>
           <div className="trust-strip-inner">
             {trustHighlights.map((item) => (
@@ -171,27 +167,27 @@ const Landing = () => {
 
       <section className="care-path">
         <div className="container">
-          <h2>Your Care Path, Step by Step</h2>
+          <h2>{t('landing.carePathTitle')}</h2>
           <div className="care-path-grid">
             <article>
               <strong>01</strong>
-              <h3>Book and Confirm</h3>
-              <p>Pick your day and reserve an open slot in seconds.</p>
+              <h3>{t('landing.step1Title')}</h3>
+              <p>{t('landing.step1Desc')}</p>
             </article>
             <article>
               <strong>02</strong>
-              <h3>Clinical Assessment</h3>
-              <p>Your symptoms and urgency are captured before your visit begins.</p>
+              <h3>{t('landing.step2Title')}</h3>
+              <p>{t('landing.step2Desc')}</p>
             </article>
             <article>
               <strong>03</strong>
-              <h3>Treatment Planning</h3>
-              <p>Diagnosis, procedures, and medication documented in one file.</p>
+              <h3>{t('landing.step3Title')}</h3>
+              <p>{t('landing.step3Desc')}</p>
             </article>
             <article>
               <strong>04</strong>
-              <h3>Follow-up Tracking</h3>
-              <p>Every visit stays linked so your treatment history is always clear.</p>
+              <h3>{t('landing.step4Title')}</h3>
+              <p>{t('landing.step4Desc')}</p>
             </article>
           </div>
         </div>
@@ -199,22 +195,22 @@ const Landing = () => {
 
       <section className="clinic-gallery">
         <div className="container">
-          <h2>Inside Our Clinical Environment</h2>
+          <h2>{t('landing.galleryTitle')}</h2>
           <div className="gallery-grid">
             <img
               src="https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1200&q=80"
-              alt="Modern dental treatment room"
-              onError={withFallback('Clinical Environment', '#0f4c81')}
+              alt={t('landing.galleryTitle')}
+              onError={withFallback(t('landing.galleryTitle'), '#0f4c81')}
             />
             <img
               src="https://images.unsplash.com/photo-1606265752439-1f18756aa5fc?auto=format&fit=crop&w=1200&q=80"
-              alt="Dental consultation with patient"
-              onError={withFallback('Consultation', '#1a6ca8')}
+              alt={t('landing.clinicalContext')}
+              onError={withFallback(t('landing.clinicalContext'), '#1a6ca8')}
             />
             <img
               src="https://images.unsplash.com/photo-1609840114035-3c981b782dfe?auto=format&fit=crop&w=1200&q=80"
-              alt="Professional dental instruments setup"
-              onError={withFallback('Dental Instruments', '#205f94')}
+              alt={t('landing.servicesTitle')}
+              onError={withFallback(t('landing.servicesTitle'), '#205f94')}
             />
           </div>
         </div>
@@ -222,50 +218,50 @@ const Landing = () => {
 
       <section className="services">
         <div className="container">
-          <h2>Our Services</h2>
+          <h2>{t('landing.servicesTitle')}</h2>
           <div className="service-tiles">
             <div className="service-tile">
               <img
                 src="https://images.unsplash.com/photo-1629909615184-74f495363b67?auto=format&fit=crop&w=1200&q=80"
-                alt="General dentistry service"
-                onError={withFallback('General Dentistry', '#0f4c81')}
+                alt={t('landing.generalDentistry')}
+                onError={withFallback(t('landing.generalDentistry'), '#0f4c81')}
               />
               <div className="service-body">
-                <h3>General Dentistry</h3>
-                <p>Checkups, cleanings, prevention, and restorative care.</p>
+                <h3>{t('landing.generalDentistry')}</h3>
+                <p>{t('landing.generalDentistryDesc')}</p>
               </div>
             </div>
             <div className="service-tile">
               <img
                 src="https://images.unsplash.com/photo-1588776814546-daab30f310ce?auto=format&fit=crop&w=1200&q=80"
-                alt="Cosmetic dentistry service"
-                onError={withFallback('Cosmetic Dentistry', '#0d5f98')}
+                alt={t('landing.cosmeticDentistry')}
+                onError={withFallback(t('landing.cosmeticDentistry'), '#0d5f98')}
               />
               <div className="service-body">
-                <h3>Cosmetic Dentistry</h3>
-                <p>Whitening, veneers, bonding, and aesthetic smile design.</p>
+                <h3>{t('landing.cosmeticDentistry')}</h3>
+                <p>{t('landing.cosmeticDentistryDesc')}</p>
               </div>
             </div>
             <div className="service-tile">
               <img
                 src="https://images.unsplash.com/photo-1606811841689-23dfddce3e95?auto=format&fit=crop&w=1200&q=80"
-                alt="Orthodontics service"
-                onError={withFallback('Orthodontics', '#165f95')}
+                alt={t('landing.orthodontics')}
+                onError={withFallback(t('landing.orthodontics'), '#165f95')}
               />
               <div className="service-body">
-                <h3>Orthodontics</h3>
-                <p>Aligners and braces plans with progress monitoring.</p>
+                <h3>{t('landing.orthodontics')}</h3>
+                <p>{t('landing.orthodonticsDesc')}</p>
               </div>
             </div>
             <div className="service-tile">
               <img
                 src={oralSurgeryImage}
-                alt="Oral surgery service"
-                onError={withFallback('Oral Surgery', '#134f81')}
+                alt={t('landing.oralSurgery')}
+                onError={withFallback(t('landing.oralSurgery'), '#134f81')}
               />
               <div className="service-body">
-                <h3>Oral Surgery</h3>
-                <p>Extractions, surgical planning, and post‑op follow‑ups.</p>
+                <h3>{t('landing.oralSurgery')}</h3>
+                <p>{t('landing.oralSurgeryDesc')}</p>
               </div>
             </div>
           </div>
@@ -274,10 +270,10 @@ const Landing = () => {
 
       <section className="cta">
         <div className="container">
-          <h2>Ready to Book Your Appointment?</h2>
-          <p>Book your next visit with {clinicName}</p>
+          <h2>{t('landing.ctaTitle')}</h2>
+          <p>{t('landing.ctaSubtitle', { clinicName })}</p>
           <Link to="/patient-workspace/book" className="btn btn-primary btn-large">
-            Schedule Now
+            {t('landing.scheduleNow')}
           </Link>
         </div>
       </section>
@@ -285,25 +281,25 @@ const Landing = () => {
       <section className="location-contact">
         <div className="container location-contact-grid">
           <div className="location-panel">
-            <h2>Visit {clinicName}</h2>
-            <p>123 Smile Avenue, Downtown Health District</p>
-            <p>Mon - Fri: 9:00 AM - 6:00 PM | Sat: 10:00 AM - 4:00 PM</p>
-            <p>Phone: (555) 123-4567 | Email: hello@dentalclinic.com</p>
+            <h2>{t('landing.visitTitle', { clinicName })}</h2>
+            <p>{t('landing.address')}</p>
+            <p>{t('landing.hoursDetail')}</p>
+            <p>{t('landing.phoneEmail')}</p>
             <iframe
-              title="Clinic map"
+              title={t('landing.visitTitle', { clinicName })}
               src="https://www.google.com/maps?q=dental%20clinic&output=embed"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
             />
           </div>
           <form className="contact-panel" onSubmit={(e) => e.preventDefault()}>
-            <h3>Quick Contact</h3>
-            <p>Send us a message and we will call you back.</p>
-            <input type="text" placeholder="Full name" />
-            <input type="tel" placeholder="Phone number" />
-            <input type="email" placeholder="Email address" />
-            <textarea rows="4" placeholder="How can we help?" />
-            <button type="submit" className="btn btn-primary">Send Request</button>
+            <h3>{t('landing.quickContact')}</h3>
+            <p>{t('landing.quickContactDesc')}</p>
+            <input type="text" placeholder={t('landing.fullName')} />
+            <input type="tel" placeholder={t('landing.phoneNumber')} />
+            <input type="email" placeholder={t('landing.emailAddress')} />
+            <textarea rows="4" placeholder={t('landing.howCanWeHelp')} />
+            <button type="submit" className="btn btn-primary">{t('landing.sendRequest')}</button>
           </form>
         </div>
       </section>
@@ -313,22 +309,22 @@ const Landing = () => {
           <div className="footer-content">
             <div className="footer-section">
               <h4>{clinicName}</h4>
-              <p>Your trusted partner in dental health</p>
+              <p>{t('landing.trustedPartner')}</p>
             </div>
             <div className="footer-section">
-              <h4>Hours</h4>
-              <p>Monday - Friday: 9:00 AM - 6:00 PM</p>
-              <p>Saturday: 10:00 AM - 4:00 PM</p>
-              <p>Sunday: Closed</p>
+              <h4>{t('common.hours')}</h4>
+              <p>{t('landing.hoursMondayFriday')}</p>
+              <p>{t('landing.hoursSaturdayDetail')}</p>
+              <p>{t('landing.sundayClosed')}</p>
             </div>
             <div className="footer-section">
-              <h4>Contact</h4>
+              <h4>{t('common.contact')}</h4>
               <p>Phone: (555) 123-4567</p>
               <p>Email: hello@dentalclinic.com</p>
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2024 {clinicName}. All rights reserved.</p>
+            <p>{t('landing.allRights', { clinicName })}</p>
           </div>
         </div>
       </footer>
